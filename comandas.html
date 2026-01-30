@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comandas - AsaDelta Esportes</title>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    
+    <link rel="stylesheet" href="comandas.css" />
+</head>
+<body>
+
+    
+  <nav class="navbar navbar-expand-lg" style="background:#28a745;">
+    <div class="container-fluid">
+      <a class="navbar-brand text-white fw-bold" href="#">
+        <i class="bi bi-trophy-fill me-2"></i>AsaDelta Esportes
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="clientes.html">Clientes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="quadras.html">Quadras</a></li>
+                    <li class="nav-item"><a class="nav-link" href="produtos.html">Produtos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="reservas.html">Reservas PC</a></li>
+                    <li class="nav-item"><a class="nav-link" href="reservasMobile.html">Reservas Mobile</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="comandas.html">Comandas</a></li>
+                    <li class="nav-item"><a class="nav-link" href="relatorios.html">Relatórios</a></li>
+                    <li class="nav-item"><a class="nav-link" href="relatorioReservas.html">Rel. Reservas</a></li>
+                </ul>
+      </div>
+    </div>
+  </nav>
+
+
+    <main class="container my-4">
+        
+        <section id="venda-direta">
+            <h2 class="fs-4">Venda Direta</h2>
+            <div class="row g-2 equal-cards g-3 align-items-stretch equal-cards">
+                <div class="col-lg-4 col-md-6">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title fs-5">Venda Direta / Cortesia</h5>
+                            
+                            <div class="mb-3 d-none"><label for="campo-codigo-barras" class="form-label small">Código de Barras</label>
+                                <input type="text" class="form-control form-control-sm" id="campo-codigo-barras" placeholder="Passe o leitor de código de barras..." disabled>
+                                <small class="form-text text-muted">A venda será registrada automaticamente.</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="selecionar-produto" class="form-label small">Selecionar Produto</label>
+                                <div class="row">
+                                    <div class="col-9">
+                                        <select class="form-select form-select-sm" id="selecionar-produto" disabled>
+                                            <option selected disabled>Selecione um Produto...</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-3">
+                                        <input type="number" class="form-control form-control-sm" id="quantidade-manual" value="1" min="1" disabled>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-grid mt-2">
+                                <button id="btn-adicionar-item-venda" class="btn btn-secondary btn-sm" disabled>Adicionar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title fs-5">Carrinho de Compras</h5>
+                            <ul id="lista-itens-venda" class="list-group list-group-flush mb-3">
+                                <li class="list-group-item text-muted small">Nenhum item adicionado.</li>
+                            </ul>
+                            <div class="d-flex justify-content-between font-weight-bold small">
+                                <span>Subtotal:</span>
+                                <span>R$ <span id="subtotal">0.00</span></span>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between font-weight-bold fs-5">
+                                <span>Total:</span>
+                                <span>R$ <span id="total-venda">0.00</span></span>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-3">
+                                <button id="finalizar-venda-btn" class="btn btn-success btn-sm w-50 me-2" disabled>Venda</button>
+                                <button id="cortesia-perca-btn" class="btn btn-warning btn-sm w-50 ms-2" disabled>Cortesia / Perca</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            
+                <div class="col-lg-4 d-none d-lg-block">
+                    <div class="card h-100 shadow-sm">
+        <div class="card-body metrics-card">
+            <h5 class="card-title mb-2">Resumo do Dia</h5>
+            <div class="metric"><span class="label"><span class="badge-dot badge-reservas-apagar"></span>Reservas a pagar</span><span id="mReservasAPagar" class="value">R$ 0,00</span></div>
+            <div class="metric"><span class="label"><span class="badge-dot badge-reservas-pagas"></span>Reservas pagas</span><span id="mReservasPagas" class="value">R$ 0,00</span></div>
+            <div class="metric"><span class="label"><span class="badge-dot badge-comandas-abertas"></span>Comandas abertas</span><span id="mComandasAbertas" class="value">R$ 0,00</span></div>
+            <div class="metric"><span class="label"><span class="badge-dot badge-produtos-vendidos"></span>Produtos vendidos</span><span id="mProdutosVendidos" class="value">R$ 0,00</span></div>
+            <hr class="my-2" />
+            <div class="metric"><span class="label"><span class="badge-dot badge-total-dia"></span>Total do dia</span><span id="mTotalDia" class="value">R$ 0,00</span></div>
+            <div class="mt-2 small muted">Atualiza em tempo real.</div>
+        </div>
+    </div>
+                    </div>
+                </div>
+</div>
+        </section>
+
+        <section id="comandas-gerenciamento" class="mt-2">
+            <div class="card shadow-sm p-3">
+                <h3 class="card-title fs-5">Comandas</h3>
+                
+                <div class="row g-2 mb-4">
+                    <div class="col-md-3">
+                        <label for="cliente-cadastrado" class="form-label small">Nova comanda</label>
+                        <input class="form-control form-control-sm" list="lista-clientes-datalist" id="cliente-cadastrado" placeholder="Buscar cliente ou nova comanda">
+                        <datalist id="lista-clientes-datalist"></datalist>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="button" class="btn btn-primary btn-sm w-100" id="btn-salvar-comanda">Abrir</button>
+                    </div>
+                </div>
+                <h3 class="card-title fs-5"></h3>
+                <h5 class="card-title fs-5">Comandas Abertas</h5>
+                <div id="lista-comandas">
+                    <p class="text-center text-muted mt-3 small">Nenhuma comanda aberta.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="reservas-do-dia" class="mt-5">
+            <h2 class="fs-4">Reservas do Dia</h2>
+            <div class="mt-3 table-responsive">
+                <table class="table table-bordered table-striped small">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Quadra</th>
+                            <th>Valor</th>
+                            <th>Início</th>
+                            <th>Fim</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-reservas-dia">
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">Nenhuma reserva para hoje.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        
+        <section id="reservas-futuras" class="mt-5">
+            <h2 class="fs-4">Abrir Comanda com Reservas Futuras</h2>
+            <div class="card shadow-sm p-3 mb-4">
+                <h5 class="card-title fs-6">Buscar Reservas de Cliente</h5>
+                <div class="row g-2">
+                    <div class="col-md-5">
+                        <label for="cliente-busca-reserva" class="form-label small">Cliente</label>
+                        <input class="form-control form-control-sm" list="lista-clientes-datalist" id="cliente-busca-reserva" placeholder="Buscar cliente...">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="mes-busca" class="form-label small">Mês</label>
+                        <select class="form-select form-select-sm" id="mes-busca"></select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="ano-busca" class="form-label small">Ano</label>
+                        <select class="form-select form-select-sm" id="ano-busca"></select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="button" class="btn btn-primary btn-sm w-100" id="btn-buscar-reservas-futuras">Buscar Reservas</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="historico-vendas" class="mt-5">
+            <h2 class="fs-4">Histórico de Vendas e Comandas Pagas</h2>
+            <div class="card shadow-sm p-3">
+                <div class="d-flex align-items-center mb-3">
+                    <label for="filtro-data" class="form-label me-2 mb-0 small">Filtrar por data:</label>
+                    <input type="date" class="form-control form-control-sm me-3" id="filtro-data" style="max-width: 150px;">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-sm btn-outline-secondary active" id="btn-filtro-ambos">Ambos</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-filtro-comandas">Comandas</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-filtro-vendas">Vendas</button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped small">
+                        <thead>
+                            <tr>
+                                <th>Tipo</th>
+                                <th>Cliente / ID</th>
+                                <th>Data e Hora</th>
+                                <th>Total</th>
+                                <th>Detalhes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista-historico">
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">Selecione uma data para ver o histórico.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <div class="modal fade" id="adicionarItemModal" tabindex="-1" aria-labelledby="adicionarItemModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="adicionarItemModalLabel">Adicionar Item</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="selecionar-produto-comanda" class="form-label">Selecionar Produto</label>
+                            <div class="row">
+                                <div class="col-9">
+                                    <select class="form-select" id="selecionar-produto-comanda">
+                                        <option selected disabled>Selecione um Produto...</option>
+                                    </select>
+                                </div>
+                                <div class="col-3">
+                                    <input type="number" class="form-control" id="quantidade-produto-comanda" value="1" min="1">
+                                </div>
+                            </div>
+                            <div class="d-grid mt-2">
+                                <button type="button" class="btn btn-secondary" id="btn-adicionar-item-manual">Adicionar Item</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="pagamentoModal" tabindex="-1" aria-labelledby="pagamentoModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="pagamentoModalLabel">Pagamento Comanda #</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-muted small">Selecione os itens a serem pagos e edite a quantidade, se necessário.</p>
+                        
+                        <table class="table table-striped table-hover small mb-3">
+                            <thead>
+                                <tr>
+                                    <th>Pagar</th>
+                                    <th>Item</th>
+                                    <th>Preço</th>
+                                    <th>Total</th>
+                                    <th>Qtd. na Comanda</th>
+                                    <th>Qtd. a Pagar</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lista-itens-pagamento">
+                                </tbody>
+                        </table>
+                        
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-4">
+                                <label for="valor-recebido" class="form-label">Valor Recebido</label>
+                                <input type="number" step="0.01" class="form-control" id="valor-recebido">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="total-pagar" class="form-label text-success">Total a Pagar (Itens Selecionados)</label>
+                                <p class="form-control-plaintext text-success fw-bold" id="total-pagar">R$ 0.00</p>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="saldo-restante" class="form-label text-danger">Saldo a Pagar (Total Comanda)</label>
+                                <p class="form-control-plaintext text-danger fw-bold" id="saldo-restante">R$ 0.00</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-success" id="btn-finalizar-pagamento-modal">Finalizar Pagamento</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal fade" id="modalReservasFuturas" tabindex="-1" aria-labelledby="modalReservasFuturasLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title" id="modalReservasFuturasLabel"><i class="bi bi-calendar-check"></i> Reservas Pendentes</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="nome-cliente-modal" class="small text-muted">Selecione as reservas para incluir na comanda.</p>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover small">
+                                <thead>
+                                    <tr>
+                                        <th><input type="checkbox" id="selecionar-todas-reservas" class="form-check-input"></th>
+                                        <th>Dia da Semana</th> 
+                                        <th>Data</th> 
+                                        <th>Quadra</th>
+                                        <th>Horário</th>
+                                        <th class="text-end" style="width: 25%;">Valor (Editar)</th> 
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lista-reservas-futuras">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                        <button type="button" class="btn btn-success" id="btn-abrir-comanda-futuras">Abrir Comanda com Selecionadas</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalDetalhesVenda" tabindex="-1" aria-labelledby="modalDetalhesVendaLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalDetalhesVendaLabel">Detalhes da Transação</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>Tipo:</strong> <span id="detalhes-tipo"></span></p>
+                        <p><strong>Cliente:</strong> <span id="detalhes-cliente"></span></p>
+                        <p><strong>Total:</strong> <span id="detalhes-total"></span></p>
+                        <p><strong>Data/Hora:</strong> <span id="detalhes-data"></span></p>
+                        <hr>
+                        <h6>Itens da Transação</h6>
+                        <table class="table table-striped table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Quantidade</th>
+                                    <th>Preço Un.</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="detalhes-itens">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    
+        <div class="modal fade" id="vincularReservaModal" tabindex="-1" aria-labelledby="vincularReservaModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="vincularReservaModalLabel">Vincular Comanda a uma Reserva de Hoje</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-muted small mb-2">
+                            Selecione a reserva do time em que esse cliente está jogando (apenas para registro).
+                        </p>
+                        <div id="lista-reservas-vinculo"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-primary" id="btn-salvar-vinculo-reserva">Vincular</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- Espera DB ficar pronto e roda __setupMetrics -->
+
+
+
+
+
+
+
+
+
+
+    <script src="comandas.js"></script>
+</body>
+</html>

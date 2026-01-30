@@ -1,0 +1,402 @@
+
+        /* Estilos globais */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        /* Estilos do cabeçalho */
+        header {
+            background-color: #28a745;
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header .logo img {
+            width: 100px;
+            height: 100px;
+        }
+
+        header nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            gap: 20px;
+        }
+
+        header nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        header nav a:hover, header nav a.active-page {
+            background-color: #218838;
+        }
+
+        main {
+            padding: 20px;
+        }
+        
+        /* Estilos para a seção de Venda Direta */
+        #venda-direta .card, #comandas-gerenciamento .card {
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .comanda-card, .reserva-card {
+            transition: transform 0.2s;
+        }
+        
+        .comanda-card:hover, .reserva-card:hover {
+            transform: translateY(-5px);
+        }
+
+        /* Estilo para a lista de itens no carrinho */
+        #lista-itens-venda .list-group-item.item-venda {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        /* Estilo para o botão de finalizar venda */
+        .btn-finalizar {
+            font-size: 1.25rem;
+            font-weight: bold;
+            padding: 15px;
+        }
+        
+        /* Estilos do Modal de Gerenciamento de Comanda */
+        #itens-comanda-list .list-group-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        #itens-comanda-list .list-group-item .item-details {
+            flex-grow: 1;
+        }
+        
+        /* Estilo para inputs de valor editável no modal de reservas futuras */
+        .valor-input-reserva {
+            width: 100px; 
+            display: inline-block; 
+            text-align: right;
+        }
+    
+        /* Helpers for equal-height cards in Venda Direta */
+        .equal-cards .card { height: 100%; }
+        .card { border-radius: 14px; }
+        .btn { border-radius: 10px; }
+
+    
+.navbar, header, .topbar {
+  background-color: rgba(5, 20, 15, 0.35) !important;
+  backdrop-filter: blur(4px);
+}
+.card {
+  background-color: #ffffff;
+  color: #212529;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+.card .card-header {
+  background: #f6faf8;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+.form-control, .form-select {
+  border-radius: 10px;
+}
+.btn {
+  border-radius: 10px;
+}
+/* Equalize height for the three cards */
+.equal-cards .card { height: 100%; }
+
+.modal-content{background:#fff!important;color:#1e1e1e!important;border-radius:16px!important;box-shadow:0 20px 50px rgba(0,0,0,.35)!important;}.modal-header{background:#f4faf7!important;color:#0b2c22!important;border-bottom:1px solid rgba(0,0,0,.08)!important;}.modal-backdrop.show{opacity:.5;}#comandas-abertas .card,.comanda-card{border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.08);border:1px solid rgba(0,0,0,.06);}#comandas-abertas .card-header{background:#f6faf8;border-bottom:1px solid rgba(0,0,0,.06);}
+/* ===== Modernização visual das COMANDAS (auto-aplicada via JS) ===== */
+.modern-comanda {
+  border-radius: 16px !important;
+  border: 1px solid rgba(0,0,0,.06) !important;
+  box-shadow: 0 12px 28px rgba(0,0,0,.08) !important;
+  overflow: hidden;
+}
+
+.modern-comanda .modern-comanda-title {
+  font-weight: 800;
+  font-size: 1.25rem;
+  color: #184634;
+  margin: .25rem 0 .5rem 0;
+}
+
+.modern-comanda .separator, 
+.modern-comanda hr {
+  border: none;
+  border-top: 1px dashed rgba(0,0,0,.18);
+  margin: .75rem 0;
+  height: 0;
+}
+
+.modern-comanda .list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: .35rem .25rem;
+  border-bottom: 1px dashed rgba(0,0,0,.08);
+}
+
+.modern-comanda .list-item:hover { background: #f9fcfb; }
+
+.modern-comanda .btn-remove, 
+.modern-comanda .btn-danger {
+  --size: 32px;
+  width: var(--size); height: var(--size);
+  min-width: var(--size); min-height: var(--size);
+  border-radius: 999px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: none;
+  box-shadow: 0 3px 10px rgba(0,0,0,.12);
+}
+
+.modern-comanda .total-box,
+.modern-comanda .modern-total {
+  background: #f2f8f5;
+  border: 1px solid rgba(0,0,0,.06);
+  border-radius: 12px;
+  padding: .75rem 1rem;
+  margin-top: .75rem;
+  margin-bottom: .5rem;
+}
+
+.modern-comanda .modern-total .label { color: #355c4b; font-weight: 600; }
+.modern-comanda .modern-total .valor { font-weight: 800; color: #0d6d4d; }
+
+.modern-comanda .btn-acao { border-radius: 12px; height: 42px; font-weight: 700; letter-spacing: .2px; }
+.modern-comanda .btn-acao + .btn-acao { margin-left: .5rem; }
+.modern-comanda .btn-success { background:#198754; border-color:#198754; }
+.modern-comanda .btn-success:hover { filter: brightness(.95); }
+.modern-comanda .btn-secondary { background:#6c757d; border-color:#6c757d; }
+.modern-comanda .btn-secondary:hover { filter: brightness(.95); }
+
+.modern-comanda .btn-close { filter: grayscale(.15); opacity:.7; }
+.modern-comanda .btn-close:hover { opacity:1; }
+
+
+/* ===== Refinos das Comandas (compacto, linhas contínuas, botões modernos) ===== */
+.modern-comanda {
+  border-radius: 14px !important;
+  box-shadow: 0 8px 18px rgba(0,0,0,.06) !important;
+}
+
+.modern-comanda .modern-comanda-title {
+  font-weight: 700;
+  font-size: 1.15rem;
+  margin: .25rem 0 .25rem 0;
+}
+
+.modern-comanda .card-body { padding: .75rem .9rem .6rem; }
+
+/* Linha contínua (substitui os hifens manuais) */
+.comanda-hr { 
+  border: 0; 
+  border-top: 1px solid rgba(0,0,0,.15); 
+  margin: .6rem 0; 
+}
+
+/* Lista mais enxuta */
+.modern-comanda .list-item { 
+  padding: .28rem .2rem; 
+  border-bottom: 1px solid rgba(0,0,0,.06);
+}
+.modern-comanda .list-item:hover { background: #f9fbfa; }
+
+/* Botões inferiores em formato pílula e altura menor */
+.modern-comanda .btn-acao { 
+  height: 38px; 
+  border-radius: 999px; 
+  font-weight: 600; 
+  padding: 0 16px; 
+}
+.modern-comanda .btn-acao + .btn-acao { margin-left: .5rem; }
+.modern-comanda .btn-success { background:#1b8e5f; border-color:#1b8e5f; }
+.modern-comanda .btn-secondary { background:#67727b; border-color:#67727b; }
+
+/* Botões de remover menores e com estilo outline */
+.modern-comanda .btn-remove, 
+.modern-comanda .btn-danger {
+  --size: 30px;
+  width: var(--size); height: var(--size);
+  min-width: var(--size); min-height: var(--size);
+  border-radius: 999px; 
+  background: transparent; 
+  border: 1px solid #dc3545;
+  color: #dc3545;
+  box-shadow: none;
+}
+.modern-comanda .btn-danger:hover,
+.modern-comanda .btn-remove:hover { background: #ffe8eb; }
+
+
+/* ===== Card de Métricas do Dia (3º card) ===== */
+.metrics-card .metric {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .5rem .25rem; border-bottom: 1px solid rgba(0,0,0,.06);
+}
+.metrics-card .metric:last-child { border-bottom: 0; }
+.metrics-card .label { color:#2a5c47; font-weight:600; }
+.metrics-card .value { font-weight:800; color:#0d6d4d; }
+.metrics-card .muted { color:#6b7a86; font-weight:500; }
+.metrics-card .badge-dot { width:10px; height:10px; border-radius:50%; display:inline-block; margin-right:.5rem; }
+.badge-reservas-apagar { background:#dc3545; }
+.badge-reservas-pagas { background:#0d6efd; }
+.badge-comandas-abertas { background:#fd7e14; }
+.badge-produtos-vendidos { background:#198754; }
+.badge-total-dia { background:#6f42c1; }
+
+
+/* ===== Compact layout for top 3 cards (equal height) ===== */
+.equal-cards { align-items: stretch !important; }
+.equal-cards .card { height: 100% !important; }
+
+/* Global compactness */
+.card { border-radius: 12px; }
+.card .card-body { padding: 10px 12px; }
+.card .card-title { font-size: 1rem; margin-bottom: 6px; }
+
+/* Venda Direta + Carrinho buttons slimmer */
+.btn { border-radius: 999px; padding: 6px 10px; font-size: 0.85rem; }
+.form-control, .form-select { height: 36px; font-size: 0.85rem; padding: 6px 10px; }
+
+/* Metrics card compact */
+.metrics-card { font-size: 0.82rem; }
+.metrics-card .metric { padding: 6px 0; }
+.metrics-card .label { font-weight: 600; }
+.metrics-card .value { font-weight: 800; }
+.metrics-card .badge-dot { width: 8px; height: 8px; margin-right: .4rem; }
+
+/* Comanda compact */
+.modern-comanda .modern-comanda-title { font-size: 1.05rem; }
+.modern-comanda .card-body { padding: 8px 10px 6px; }
+.modern-comanda .btn-acao { height: 34px; font-size: 0.86rem; }
+.modern-comanda .btn-danger, .modern-comanda .btn-remove { --size: 26px; }
+
+/* Reduce gaps between rows */
+.row.g-3.equal-cards > [class*="col-"] { margin-bottom: 8px; }
+
+
+/* ===== Comandas ainda mais compactas ===== */
+.modern-comanda { border-radius: 12px !important; }
+.modern-comanda .modern-comanda-title { font-size: 0.98rem; margin: .15rem 0 .25rem; }
+.modern-comanda .card-body { padding: 6px 8px 6px; }
+.modern-comanda .list-item { padding: .2rem .15rem; }
+.modern-comanda .btn-acao { height: 30px; font-size: 0.8rem; padding: 0 12px; }
+.modern-comanda .btn-danger, .modern-comanda .btn-remove { --size: 22px; }
+.modern-comanda .modern-total { padding: .5rem .75rem; }
+
+
+
+
+
+
+
+.card-custom { border: none; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-radius: 8px; background: white; }
+.btn-success-custom { background-color: var(--primary-color); border: none; color: white; font-weight: bold; }
+.btn-success-custom:hover { background-color: var(--dark-green); }
+
+/* Ajuste de cores das linhas */
+.table-danger { background-color: #f8d7da !important; color: #721c24; } /* Crítico */
+.table-warning { background-color: #fff3cd !important; color: #856404; } /* Atenção */
+
+.table thead th { background-color: #f8f9fa; text-transform: uppercase; font-size: 0.75rem; color: #666; border-bottom: 2px solid #dee2e6; }
+.fw-bold-custom { font-weight: 700; }
+
+.btn-success-custom:hover{ background:var(--dark-green); border-color:var(--dark-green); }
+.card-custom{ border:0; border-radius:16px; box-shadow:0 8px 24px rgba(0,0,0,.06); }
+.fw-bold-custom{ font-weight:800; }
+
+
+
+
+
+/* ===== Forçar tema claro (padrão Reservas) ===== */
+body{
+  background:#f4f4f4 !important;
+  color:#1e1e1e !important;
+}
+main.container-fluid, main.container{
+  max-width: 95%;
+}
+
+
+/* ===== Grid das Comandas Abertas (5 por linha no desktop) ===== */
+.comandas-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap:14px;
+  align-items: start;
+}
+@media (min-width: 1400px){
+  .comandas-grid{ grid-template-columns: repeat(5, 1fr); }
+}
+.comanda-card .card-body{ padding:12px 12px 10px; }
+.comanda-card .card-title{ font-size: 1rem; font-weight: 700; }
+.comanda-card .card-text, .comanda-card small{ font-size: .84rem; }
+.comanda-card .btn{ font-size:.82rem; padding:6px 10px; border-radius:10px; }
+.comanda-card .btn-sm{ padding:6px 10px; }
+.comanda-card .total-box{ font-weight:700; font-size:.9rem; }
+.comanda-card .divider{ height:1px; background:rgba(0,0,0,.08); margin:8px 0; }
+
+/* ===== Agrupamentos por reserva/time ===== */
+.comanda-group{
+  border:1px solid rgba(0,0,0,.06);
+  border-radius:14px;
+  background:#fff;
+  padding:12px;
+  margin: 12px 0;
+  box-shadow: 0 8px 20px rgba(0,0,0,.06);
+}
+.comanda-group-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:10px;
+  font-weight:700;
+}
+.comanda-group-title{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:.95rem;
+}
+.comanda-dot{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  background: var(--team-color, #0d6efd);
+}
+.comanda-count{
+  font-size:.8rem;
+  font-weight:700;
+  padding:2px 8px;
+  border-radius:999px;
+  background: rgba(0,0,0,.06);
+}
+
+/* Botão quando vinculado */
+.btn-team{
+  background: var(--team-color, #0d6efd) !important;
+  border-color: var(--team-color, #0d6efd) !important;
+  color:#fff !important;
+}
+.btn-team:hover{ filter: brightness(.95); }
