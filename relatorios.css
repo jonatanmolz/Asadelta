@@ -1,0 +1,118 @@
+:root{
+  --asa-green:#25a842;
+  --asa-green-dark:#1f8d36;
+  --asa-bg:#f5f7fb;
+  --asa-card:#ffffff;
+  --asa-border:#e6e9f2;
+  --asa-text:#1f2937;
+}
+
+body{
+  background: var(--asa-bg);
+  color: var(--asa-text);
+}
+
+.asabar{
+  background: var(--asa-green);
+}
+
+.asabar .navbar-brand,
+.asabar .nav-link{
+  color:#fff !important;
+  font-weight:600;
+}
+
+.asabar .nav-link{
+  opacity:.95;
+}
+.asabar .nav-link:hover{ opacity:1; text-decoration: underline; }
+.asabar .nav-link.active{ text-decoration: underline; }
+
+.asa-card{
+  border:1px solid var(--asa-border);
+  border-radius:16px;
+  box-shadow: 0 8px 24px rgba(17,24,39,.06);
+  background: var(--asa-card);
+}
+
+.btn-asa-green{
+  background: var(--asa-green);
+  color:#fff;
+  border:none;
+}
+.btn-asa-green:hover{
+  background: var(--asa-green-dark);
+  color:#fff;
+}
+
+.btn-asa-pill{
+  border: 2px solid #bfe9c7;
+  background: #eaf8ee;
+  color: #116b27;
+  font-weight:700;
+  border-radius: 999px;
+  padding: .55rem .9rem;
+}
+.btn-asa-pill i{ margin-right:.35rem; }
+.btn-asa-pill:hover{
+  background:#dff4e5;
+}
+.btn-asa-pill.active{
+  background:#c9f0d2;
+  border-color:#86dc9a;
+}
+
+.asa-summary{
+  border:1px solid var(--asa-border);
+  border-radius:14px;
+  padding:16px;
+  background:#fff;
+}
+.asa-summary .label{
+  font-weight:800;
+  text-transform:uppercase;
+  font-size:.82rem;
+  color:#64748b;
+}
+.asa-summary .value{
+  font-size:1.5rem;
+  font-weight:900;
+  margin-top:4px;
+}
+.asa-summary .hint{
+  font-size:.85rem;
+  color:#6b7280;
+}
+
+.asa-section-title{
+  font-weight:900;
+  margin: 10px 0 10px;
+  display:flex;
+  align-items:center;
+  gap:.5rem;
+}
+
+.table thead th{
+  font-size:.78rem;
+  text-transform:uppercase;
+  color:#64748b;
+  letter-spacing:.03em;
+  border-top: none;
+}
+.table td{
+  vertical-align: middle;
+}
+
+.badge-soft{
+  background:#eef2ff;
+  color:#3730a3;
+  border:1px solid #c7d2fe;
+  font-weight:700;
+}
+
+#fat_saldo{
+  padding: .35rem .6rem;
+  border-radius: 10px;
+  border:1px solid var(--asa-border);
+  background:#fff;
+}

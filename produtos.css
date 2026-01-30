@@ -1,0 +1,62 @@
+:root {
+  --primary-color: #28a745;
+  --dark-green: #1e7e34;
+}
+
+body { background-color: #f8f9fa; }
+
+/* Estilo do Menu */
+.navbar { background-color: var(--primary-color); }
+.navbar-brand, .nav-link { color: white !important; font-weight: 500; }
+.nav-link:hover { color: #d4edda !important; }
+.nav-link.active { font-weight: bold; text-decoration: underline; }
+
+.card-custom { border: none; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-radius: 8px; background: white; }
+.btn-success-custom { background-color: var(--primary-color); border: none; color: white; font-weight: bold; }
+.btn-success-custom:hover { background-color: var(--dark-green); }
+
+/* Ajuste de cores das linhas */
+.table-danger { background-color: #f8d7da !important; color: #721c24; } /* Crítico */
+.table-warning { background-color: #fff3cd !important; color: #856404; } /* Atenção */
+
+.table thead th { background-color: #f8f9fa; text-transform: uppercase; font-size: 0.75rem; color: #666; border-bottom: 2px solid #dee2e6; }
+.fw-bold-custom { font-weight: 700; }
+
+.btn-success-custom:hover{ background:var(--dark-green); border-color:var(--dark-green); }
+.card-custom{ border:0; border-radius:16px; box-shadow:0 8px 24px rgba(0,0,0,.06); }
+.fw-bold-custom{ font-weight:800; }
+
+.badge-soft{
+  background:rgba(40,167,69,.12);
+  color:var(--dark-green);
+  border:1px solid rgba(40,167,69,.22);
+  font-weight:700;
+}
+
+.table thead th{
+  position:sticky; top:0; z-index:1;
+  background:#fff;
+}
+
+.small-note{ font-size:.90rem; color:#6c757d; }
+
+.form-control:focus, .form-select:focus{
+  border-color: rgba(40,167,69,.45);
+  box-shadow: 0 0 0 .25rem rgba(40,167,69,.15);
+}
+
+.modal-xl{ --bs-modal-width: 1140px; }
+
+/* ✅ Combo visual discreto (sem mudar sua identidade) */
+.combo-editor{
+  border: 1px dashed #cfe7d6;
+  border-radius: 12px;
+  padding: 12px;
+  background: #fbfffc;
+}
+
+/* ✅ Linha “combo” na tabela (rosinha igual teu print antigo) */
+.table-combo{
+  background-color: #f8d7da !important;
+  color: #721c24;
+}

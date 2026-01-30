@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quadras - AsaDelta Esportes</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <style>
+        :root {
+            --primary-color: #28a745; 
+            --dark-green: #1e7e34;
+        }
+        body {
+            background-color: #f8f9fa;
+        }
+        /* Estilo do Menu */
+        .navbar {
+            background-color: var(--primary-color);
+        }
+        .navbar-brand, .nav-link {
+            color: white !important;
+            font-weight: 500;
+        }
+        .nav-link:hover {
+            color: #d4edda !important;
+        }
+        .nav-link.active {
+            font-weight: bold;
+            text-decoration: underline;
+        }
+        
+        
+        .card-custom { border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-radius: 10px; }
+        .btn-success-custom { background-color: var(--primary-color); border: none; color: white; }
+        .btn-success-custom:hover { background-color: var(--dark-green); color: white; }
+        .table-custom { font-size: 0.9rem; }
+        
+        .badge-price {
+            font-size: 0.85rem;
+            padding: 5px 10px;
+        }
+    </style>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-trophy-fill me-2"></i>AsaDelta Esportes
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="clientes.html">Clientes</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="quadras.html">Quadras</a></li>
+                    <li class="nav-item"><a class="nav-link" href="produtos.html">Produtos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="reservas.html">Reservas PC</a></li>
+                    <li class="nav-item"><a class="nav-link" href="reservasMobile.html">Reservas Mobile</a></li>
+                    <li class="nav-item"><a class="nav-link" href="comandas.html">Comandas</a></li>
+                    <li class="nav-item"><a class="nav-link" href="relatorios.html">Relatórios</a></li>
+                    <li class="nav-item"><a class="nav-link" href="relatorioReservas.html">Rel. Reservas</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="card card-custom mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0 text-success"><i class="bi bi-plus-circle-fill"></i> Gerenciar Quadra</h5>
+            </div>
+            <div class="card-body">
+                <input type="hidden" id="idQuadra">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Nome da Quadra *</label>
+                        <input type="text" class="form-control" id="nomeQuadra" placeholder="Ex: Quadra 01 - Society">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Tipo / Piso</label>
+                        <input type="text" class="form-control" id="tipoQuadra" placeholder="Ex: Areia">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Valor Dia Semana (R$)</label>
+                        <div class="input-group">
+                            <span class="input-group-text">R$</span>
+                            <input type="number" class="form-control" id="valorSemana" placeholder="0.00" step="0.01">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Valor Final de Semana (R$)</label>
+                        <div class="input-group">
+                            <span class="input-group-text">R$</span>
+                            <input type="number" class="form-control" id="valorFimDeSemana" placeholder="0.00" step="0.01">
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3 text-end">
+                    <button class="btn btn-secondary me-2" onclick="limparFormulario()" id="btnCancelar" style="display:none;">Cancelar</button>
+                    <button class="btn btn-success-custom" onclick="salvarQuadra()">
+                        <i class="bi bi-save"></i> Salvar Quadra
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-custom">
+            <div class="card-header bg-white">
+                <h5 class="mb-0 text-secondary"><i class="bi bi-grid-3x3-gap-fill"></i> Quadras Cadastradas</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle table-custom">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nome da Quadra</th>
+                                <th>Tipo</th>
+                                <th>Valor Semana</th>
+                                <th>Valor Fim de Semana</th>
+                                <th class="text-end">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaQuadras"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // CONFIGURAÇÃO FIREBASE
+        const firebaseConfig = {
+            apiKey: "AIzaSyCSo4NsaIlD9Mdfrlp-5jjxxrhcqnx5XuI",
+            authDomain: "sistemaasadelta.firebaseapp.com",
+            projectId: "sistemaasadelta",
+            storageBucket: "sistemaasadelta.appspot.com",
+            messagingSenderId: "379026766576",
+            appId: "1:379026766576:web:c6d3f2b6a71e42a98f123d" 
+        };
+        
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let listaQuadras = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            db.collection('quadras').orderBy('nome').onSnapshot((snapshot) => {
+                listaQuadras = [];
+                snapshot.forEach(doc => {
+                    listaQuadras.push({ id: doc.id, ...doc.data() });
+                });
+                renderizarTabela();
+            });
+        });
+
+        function renderizarTabela() {
+            const tbody = document.getElementById('tabelaQuadras');
+            tbody.innerHTML = '';
+
+            listaQuadras.forEach(q => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="fw-bold text-uppercase">${q.nome}</td>
+                    <td>${q.tipo || '-'}</td>
+                    <td><span class="badge bg-light text-dark border badge-price">R$ ${parseFloat(q.valorSemana || 0).toFixed(2)}</span></td>
+                    <td><span class="badge bg-light text-success border badge-price">R$ ${parseFloat(q.valorFimDeSemana || 0).toFixed(2)}</span></td>
+                    <td class="text-end">
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-primary" onclick="editar('${q.id}')"><i class="bi bi-pencil"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="excluir('${q.id}', '${q.nome}')"><i class="bi bi-trash"></i></button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function salvarQuadra() {
+            const id = document.getElementById('idQuadra').value;
+            const nome = document.getElementById('nomeQuadra').value.trim();
+            const tipo = document.getElementById('tipoQuadra').value.trim();
+            const valorSemana = document.getElementById('valorSemana').value;
+            const valorFDS = document.getElementById('valorFimDeSemana').value;
+
+            if (!nome) return alert("O nome da quadra é obrigatório.");
+
+            const dados = {
+                nome: nome,
+                tipo: tipo,
+                valorSemana: Number(valorSemana) || 0,
+                valorFimDeSemana: Number(valorFDS) || 0
+            };
+
+            try {
+                if (id) {
+                    await db.collection('quadras').doc(id).update(dados);
+                } else {
+                    await db.collection('quadras').add(dados);
+                }
+                limparFormulario();
+            } catch (e) { alert("Erro ao salvar: " + e.message); }
+        }
+
+        function editar(id) {
+            const q = listaQuadras.find(x => x.id === id);
+            if (q) {
+                document.getElementById('idQuadra').value = q.id;
+                document.getElementById('nomeQuadra').value = q.nome;
+                document.getElementById('tipoQuadra').value = q.tipo || '';
+                document.getElementById('valorSemana').value = q.valorSemana || 0;
+                document.getElementById('valorFimDeSemana').value = q.valorFimDeSemana || 0;
+                document.getElementById('btnCancelar').style.display = 'inline-block';
+                window.scrollTo(0, 0);
+            }
+        }
+
+        async function excluir(id, nome) {
+            if (confirm(`Deseja excluir a quadra ${nome}?`)) {
+                await db.collection('quadras').doc(id).delete();
+            }
+        }
+
+        function limparFormulario() {
+            document.getElementById('idQuadra').value = '';
+            document.getElementById('nomeQuadra').value = '';
+            document.getElementById('tipoQuadra').value = '';
+            document.getElementById('valorSemana').value = '';
+            document.getElementById('valorFimDeSemana').value = '';
+            document.getElementById('btnCancelar').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
