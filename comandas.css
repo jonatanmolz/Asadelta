@@ -122,7 +122,10 @@
 /* Equalize height for the three cards */
 .equal-cards .card { height: 100%; }
 
-.modal-content{background:#fff!important;color:#1e1e1e!important;border-radius:16px!important;box-shadow:0 20px 50px rgba(0,0,0,.35)!important;}.modal-header{background:#f4faf7!important;color:#0b2c22!important;border-bottom:1px solid rgba(0,0,0,.08)!important;}.modal-backdrop.show{opacity:.5;}#comandas-abertas .card,.comanda-card{border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.08);border:1px solid rgba(0,0,0,.06);}#comandas-abertas .card-header{background:#f6faf8;border-bottom:1px solid rgba(0,0,0,.06);}
+.modal-content{background:#fff!important;color:#1e1e1e!important;border-radius:16px!important;box-shadow:0 20px 50px rgba(0,0,0,.35)!important;}
+.modal-header{background:#f4faf7!important;color:#0b2c22!important;border-bottom:1px solid rgba(0,0,0,.08)!important;}
+.modal-backdrop.show{opacity:.5;}#comandas-abertas .card,.comanda-card{border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.08);border:1px solid rgba(0,0,0,.06);}
+#comandas-abertas .card-header{background:#f6faf8;border-bottom:1px solid rgba(0,0,0,.06);}
 /* ===== Modernização visual das COMANDAS (auto-aplicada via JS) ===== */
 .modern-comanda {
   border-radius: 16px !important;
@@ -305,27 +308,11 @@
 
 
 
-
-
-
-
-.card-custom { border: none; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-radius: 8px; background: white; }
-.btn-success-custom { background-color: var(--primary-color); border: none; color: white; font-weight: bold; }
-.btn-success-custom:hover { background-color: var(--dark-green); }
-
-/* Ajuste de cores das linhas */
-.table-danger { background-color: #f8d7da !important; color: #721c24; } /* Crítico */
-.table-warning { background-color: #fff3cd !important; color: #856404; } /* Atenção */
-
-.table thead th { background-color: #f8f9fa; text-transform: uppercase; font-size: 0.75rem; color: #666; border-bottom: 2px solid #dee2e6; }
-.fw-bold-custom { font-weight: 700; }
-
-.btn-success-custom:hover{ background:var(--dark-green); border-color:var(--dark-green); }
-.card-custom{ border:0; border-radius:16px; box-shadow:0 8px 24px rgba(0,0,0,.06); }
-.fw-bold-custom{ font-weight:800; }
-
-
-
+/* Ajustes adicionais para alinhar com Reservas */
+.navbar .navbar-brand{letter-spacing:.3px;}
+.navbar-toggler{border-color: rgba(255,255,255,.35);}
+.navbar-toggler-icon{filter: invert(1);} 
+.valor-input-reserva{max-width:110px;display:inline-block;text-align:right;}
 
 
 /* ===== Forçar tema claro (padrão Reservas) ===== */
@@ -400,3 +387,236 @@ main.container-fluid, main.container{
   color:#fff !important;
 }
 .btn-team:hover{ filter: brightness(.95); }
+
+/* =========================================================
+   2026-02 Ajustes: Comandas mais compactas + Vincular Reserva em cards
+   ========================================================= */
+
+/* Grid mais denso */
+.comandas-grid{
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap:10px;
+}
+@media (min-width: 1400px){
+  .comandas-grid{ grid-template-columns: repeat(6, 1fr); }
+}
+
+/* Comanda mais enxuta */
+.comanda-card .card-body{ padding:8px 8px 6px; }
+.comanda-card .card-title{ font-size: .92rem; font-weight: 800; line-height:1.15; }
+.comanda-card .card-text, .comanda-card small, .comanda-card .small{ font-size: .78rem; }
+.comanda-card .divider{ margin:6px 0; }
+.comanda-card .btn{ font-size:.76rem; padding:5px 9px; border-radius:10px; }
+.comanda-card .btn-sm{ padding:5px 9px; }
+.comanda-card .total-box{ font-size:.82rem; }
+.comanda-group-title{ font-size:.88rem; }
+.comanda-count{ font-size:.74rem; }
+.comanda-group-badge{ font-size: .68rem; padding: .25rem .5rem; }
+
+/* Modal Vincular Reserva em formato de cards */
+.vinculo-reserva-card{
+  display:flex;
+  gap:8px;
+  align-items:flex-start;
+  width:100%;
+  border:1px solid rgba(0,0,0,.08);
+  background:#fff;
+  border-radius:14px;
+  padding:10px 10px;
+  cursor:pointer;
+  box-shadow: 0 6px 18px rgba(0,0,0,.06);
+  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+}
+.vinculo-reserva-card:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(0,0,0,.08);
+  border-color: rgba(13,110,253,.35);
+}
+.vinculo-reserva-card input[type="radio"]{
+  margin-top:3px;
+}
+.vinculo-reserva-card .vrc-content{ flex:1; min-width:0; }
+.vinculo-reserva-card .vrc-top{
+  display:flex; justify-content:space-between; gap:8px; align-items:flex-start;
+}
+.vinculo-reserva-card .vrc-name{
+  font-weight:800;
+  font-size:.86rem;
+  line-height:1.15;
+  color:#184634;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.vinculo-reserva-card .vrc-badges{ display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
+.vinculo-reserva-card .vrc-meta{
+  margin-top:6px;
+  display:flex; justify-content:space-between; gap:8px; align-items:center;
+  font-size:.78rem;
+  color:#6b7a86;
+}
+.vinculo-reserva-card .vrc-time{ font-weight:700; color:#0b2c22; }
+.vinculo-reserva-card.is-cancelada{
+  opacity:.55;
+  cursor:not-allowed;
+}
+.vinculo-reserva-card.is-cancelada:hover{
+  transform:none;
+  box-shadow: 0 6px 18px rgba(0,0,0,.06);
+  border-color: rgba(0,0,0,.08);
+}
+
+
+/* ===========================
+   Modal de Vínculo (4 quadras lado a lado)
+   =========================== */
+#vincularReservaModal .modal-dialog{
+  max-width: 1280px;
+  width: calc(100vw - 40px);
+}
+
+.vinculo-quadras-wrap{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+  justify-content:space-between;
+  overflow-x:auto;
+  padding-bottom:6px;
+}
+
+.vinculo-quadra-col{
+  flex: 0 0 24%;
+  min-width: 240px;
+}
+
+.vinculo-quadra-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  font-weight:700;
+  font-size: 12px;
+  color:#0b2c22;
+  padding: 0 2px 6px 2px;
+  border-bottom:1px solid rgba(0,0,0,.06);
+  margin-bottom:6px;
+}
+
+.vinculo-quadra-cards .vinculo-reserva-card{
+  margin-bottom:8px;
+}
+
+.vinculo-grupo-card .vrc-time{
+  color:#6c757d;
+  font-weight:600;
+}
+
+
+/* =========================
+   Reservas do Dia - compacto
+   ========================= */
+
+/* deixa tabela mais “enxuta” */
+#reservasDoDiaTable,
+#reservasDoDiaTable table {
+  font-size: 13px;
+}
+
+#reservasDoDiaTable th,
+#reservasDoDiaTable td {
+  padding: 6px 10px !important;   /* era muito alto */
+  vertical-align: middle;
+}
+
+/* reduz altura das linhas */
+#reservasDoDiaTable tr {
+  height: 44px;
+}
+
+/* inputs de valor menores */
+#reservasDoDiaTable input[type="text"],
+#reservasDoDiaTable input[type="number"]{
+  height: 30px !important;
+  padding: 4px 8px !important;
+  font-size: 13px !important;
+  width: 92px;                    /* ajusta o campo "Valor" */
+  border-radius: 10px;
+}
+
+/* Ações: botões lado a lado e menores */
+#reservasDoDiaTable .acoes,
+#reservasDoDiaTable td:last-child {
+  white-space: nowrap;
+}
+
+#reservasDoDiaTable td:last-child {
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+}
+
+/* tenta “pegar” os botões dentro da coluna Ações */
+#reservasDoDiaTable td:last-child .btn,
+#reservasDoDiaTable td:last-child button {
+  width: auto !important;          /* remove botão gigante */
+  min-width: 140px;                /* tamanho confortável */
+  height: 32px !important;
+  padding: 6px 10px !important;
+  font-size: 13px !important;
+  border-radius: 999px !important; /* estilo pill */
+  margin: 0 !important;
+}
+
+/* se tiver dois botões empilhados, força ficar em linha */
+#reservasDoDiaTable td:last-child > div,
+#reservasDoDiaTable td:last-child .acoes-wrap,
+#reservasDoDiaTable td:last-child .acoes-box {
+  display: flex !important;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap; /* em telas menores quebra para baixo */
+}
+
+/* mobile: deixa botões ocuparem a largura toda (fica melhor) */
+@media (max-width: 640px){
+  #reservasDoDiaTable td:last-child > div,
+  #reservasDoDiaTable td:last-child .acoes-wrap,
+  #reservasDoDiaTable td:last-child .acoes-box {
+    justify-content: stretch;
+  }
+
+  #reservasDoDiaTable td:last-child .btn,
+  #reservasDoDiaTable td:last-child button {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+}
+
+/* ===== Reservas do Dia: tabela mais compacta ===== */
+#reservas-do-dia table.table > :not(caption) > * > *{
+  padding: 0.45rem 0.55rem;
+  vertical-align: middle;
+}
+#reservas-do-dia .valor-input-reserva{
+  max-width: 110px;
+}
+#reservas-do-dia .acoes-reserva{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  flex-wrap:nowrap;
+}
+#reservas-do-dia .acoes-reserva .btn{
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+@media (max-width: 768px){
+  #reservas-do-dia .acoes-reserva{
+    flex-direction: column;
+    align-items: stretch;
+  }
+  #reservas-do-dia .acoes-reserva .btn{
+    width: 100%;
+  }
+}
