@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Reservas - AsaDelta Esportes</title>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        header {
+            background-color: #28a745;
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header .logo img {
+            width: 100px;
+            height: 100px;
+        }
+        header nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            gap: 20px;
+        }
+        header nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        header nav a:hover, header nav a.active-page {
+            background-color: #218838;
+        }
+        main {
+            padding: 20px;
+        }
+        .form-label.small {
+            font-size: 0.8rem;
+            margin-bottom: 0.2rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="d-flex align-items-center">
+            <img src="Logo.png" alt="Logo do Bar" class="logo">
+        </div>
+        <nav>
+            <ul>
+                <li><a href="listar_clientes.html">Clientes</a></li>
+                <li><a href="Cadastro_quadras.html">Quadras</a></li>
+                <li><a href="Produtos.html">Produtos</a></li>
+                <li><a href="Reservas.html">Reservas</a></li>
+                <li><a href="Comandas.html">Comandas</a></li>
+                <li><a href="Relatorios.html">Relatórios</a></li>
+                <li><a href="Relatorio_Reservas.html" class="active-page">Relatório de Reservas</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container-fluid">
+        <h2 class="mt-4 mb-4">Relatório de Reservas</h2>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Filtros de Busca</h5>
+                <form id="form-filtros">
+                    <div class="row g-2 align-items-end mb-3">
+                        <div class="col-md-3">
+                            <label for="filtro-data-inicio" class="form-label small">De:</label>
+                            <input type="date" class="form-control form-control-sm" id="filtro-data-inicio">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="filtro-data-fim" class="form-label small">Até:</label>
+                            <input type="date" class="form-control form-control-sm" id="filtro-data-fim">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="filtro-cliente" class="form-label small">Cliente:</label>
+                            <input class="form-control form-control-sm" list="lista-clientes-datalist" id="filtro-cliente" placeholder="Buscar cliente...">
+                            <datalist id="lista-clientes-datalist"></datalist>
+                        </div>
+                    </div>
+                    <div class="row g-2 align-items-end mb-3">
+                        <div class="col-md-3">
+                            <label for="filtro-dia-semana" class="form-label small">Dia da Semana:</label>
+                            <select class="form-select form-select-sm" id="filtro-dia-semana">
+                                <option value="">Todos</option>
+                                <option value="domingo">Domingo</option>
+                                <option value="segunda">Segunda-feira</option>
+                                <option value="terca">Terça-feira</option>
+                                <option value="quarta">Quarta-feira</option>
+                                <option value="quinta">Quinta-feira</option>
+                                <option value="sexta">Sexta-feira</option>
+                                <option value="sabado">Sábado</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="filtro-pagamento-status" class="form-label small">Pagamento:</label>
+                            <select class="form-select form-select-sm" id="filtro-pagamento-status">
+                                <option value="">Todos</option>
+                                <option value="aguardando">Aguardando</option>
+                                <option value="pago">Pago</option>
+                                <option value="cancelado">cancelado</option>
+                                <option value="atrasada">Atrasada</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="filtro-reserva-status" class="form-label small">Status:</label>
+                            <select class="form-select form-select-sm" id="filtro-reserva-status">
+                                <option value="">Todos</option>
+                                <option value="aguardando">Aguardando</option>
+                                <option value="confirmada">Confirmada</option>
+                                <option value="cancelada">Cancelada</option>
+                                <option value="finalizada">Finalizada</option>
+                            </select>
+                        </div>
+                        <div class="col-md-1">
+                            <button type="submit" class="btn btn-primary btn-sm w-100">Buscar</button>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-secondary btn-sm w-100" id="btn-limpar-filtros">Limpar Filtros</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div id="acoes-em-massa-container" style="display: none;">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Ações em Massa</h5>
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-3">
+                            <label for="status-pagamento-massa" class="form-label small">Alterar Pagamento:</label>
+                            <select class="form-select form-select-sm" id="status-pagamento-massa">
+                                <option value="">Selecione...</option>
+                                <option value="aguardando">Aguardando</option>
+                                <option value="pago">Pago</option>
+                                <option value="cancelado">Cancelado</option>
+                                <option value="atrasada">Atrasada</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-info btn-sm w-100" id="btn-aplicar-pagamento">Aplicar</button>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="status-reserva-massa" class="form-label small">Alterar Status Reserva:</label>
+                            <select class="form-select form-select-sm" id="status-reserva-massa">
+                                <option value="">Selecione...</option>
+                                <option value="Aguardando">Aguardando</option>
+                                <option value="Confirmada">Confirmada</option>
+                                <option value="cancelada">Cancelada</option>
+                                <option value="finalizada">Finalizada</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-info btn-sm w-100" id="btn-aplicar-reserva">Aplicar</button>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-danger btn-sm w-100" id="btn-excluir-massa">Excluir Selecionados</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped small">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="selecionar-todos-checkbox"></th>
+                        <th>Data</th>
+                        <th>Horário Início</th>
+                        <th>Cliente</th>
+                        <th>Valor</th>
+                        <th>Status Reserva</th>
+                        <th>Status Pagamento</th>
+                        <th>Observação Reserva</th>
+                        <th>Obs. Cliente</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="lista-reservas-relatorio">
+                    <tr>
+                        <td colspan="10" class="text-center text-muted">Use os filtros para buscar reservas.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <div class="modal fade" id="modalEdicaoReserva" tabindex="-1" aria-labelledby="modalEdicaoReservaLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEdicaoReservaLabel">Editar Reserva</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="form-edicao-reserva">
+                        <input type="hidden" id="reserva-id-edicao">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="data-reserva-edicao" class="form-label">Data</label>
+                                <input type="date" class="form-control" id="data-reserva-edicao" disabled>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="hora-inicio-edicao" class="form-label">Horário Início</label>
+                                <input type="time" class="form-control" id="hora-inicio-edicao" disabled>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="hora-fim-edicao" class="form-label">Horário Fim</label>
+                                <input type="time" class="form-control" id="hora-fim-edicao" disabled>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="cliente-edicao" class="form-label">Cliente</label>
+                                <input class="form-control" list="lista-clientes-datalist" id="cliente-edicao" placeholder="Buscar cliente..." disabled>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="quadra-edicao" class="form-label">Quadra</label>
+                                <select class="form-select" id="quadra-edicao" disabled></select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="valor-edicao" class="form-label">Valor</label>
+                                <input type="number" step="0.01" class="form-control" id="valor-edicao">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="pagamento-status-edicao" class="form-label">Status Pagamento</label>
+                                <select class="form-select" id="pagamento-status-edicao">
+                                    <option value="aguardando">Aguardando</option>
+                                    <option value="pago">Pago</option>
+                                    <option value="cancelado">Cancelado</option>
+                                    <option value="atrasada">Atrasada</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="reserva-status-edicao" class="form-label">Status Reserva</label>
+                                <select class="form-select" id="reserva-status-edicao">
+                                    <option value="Aguardando">Aguardando</option>
+                                    <option value="confirmada">Confirmada</option>
+                                    <option value="cancelada">Cancelada</option>
+                                    <option value="finalizada">Finalizada</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label for="observacao-edicao" class="form-label">Observação da Reserva</label>
+                                <textarea class="form-control" id="observacao-edicao" rows="3"></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label for="observacao-cliente-edicao" class="form-label">Observação do Cliente</label>
+                                <textarea class="form-control" id="observacao-cliente-edicao" rows="3" disabled></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-primary" id="btn-salvar-edicao">Salvar Alterações</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =========================================================
+        // Configuração e Inicialização do Firebase
+        // =========================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyCSo4NsaIlD9Mdfrlp-5jjxxrhcqnx5XuI",
+            authDomain: "sistemaasadelta.firebaseapp.com",
+            projectId: "sistemaasadelta",
+            storageBucket: "sistemaasadelta.appspot.com",
+            messagingSenderId: "379026766576",
+            appId: "1:379026766576:web:869c9b6f849d4f6d61a2b7"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // =========================================================
+        // Variáveis Globais e Elementos HTML
+        // =========================================================
+        let todosClientes = {};
+        let todasQuadras = {};
+        let reservasEncontradas = {};
+
+        const formFiltrosEl = document.getElementById('form-filtros');
+        const listaReservasRelatorioEl = document.getElementById('lista-reservas-relatorio');
+        const listaClientesDatalist = document.getElementById('lista-clientes-datalist');
+
+        const modalEdicaoReserva = new bootstrap.Modal(document.getElementById('modalEdicaoReserva'));
+        const formEdicaoReservaEl = document.getElementById('form-edicao-reserva');
+        const btnSalvarEdicaoEl = document.getElementById('btn-salvar-edicao');
+
+        const selecionarTodosCheckboxEl = document.getElementById('selecionar-todos-checkbox');
+        const btnLimparFiltrosEl = document.getElementById('btn-limpar-filtros');
+        const btnAplicarPagamentoEl = document.getElementById('btn-aplicar-pagamento');
+        const btnAplicarReservaEl = document.getElementById('btn-aplicar-reserva');
+        const btnExcluirMassaEl = document.getElementById('btn-excluir-massa');
+        const acoesEmMassaContainerEl = document.getElementById('acoes-em-massa-container');
+
+        // =========================================================
+        // Funções de Utilitário
+        // =========================================================
+
+        async function carregarClientes() {
+            try {
+                const clientesRef = db.collection('clientes');
+                const snapshot = await clientesRef.get();
+                
+                todosClientes = {};
+                listaClientesDatalist.innerHTML = '';
+                
+                snapshot.forEach(doc => {
+                    const cliente = doc.data();
+                    cliente.id = doc.id;
+                    todosClientes[cliente.id] = cliente;
+                    
+                    const option = document.createElement('option');
+                    option.value = cliente.nome;
+                    option.setAttribute('data-id', cliente.id);
+                    listaClientesDatalist.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Erro ao carregar clientes:", error);
+            }
+        }
+        
+        async function carregarQuadras() {
+            try {
+                const quadrasRef = db.collection('quadras');
+                const snapshot = await quadrasRef.get();
+                
+                todasQuadras = {};
+                const quadraEdicaoEl = document.getElementById('quadra-edicao');
+                quadraEdicaoEl.innerHTML = '';
+                
+                snapshot.forEach(doc => {
+                    const quadra = doc.data();
+                    quadra.id = doc.id;
+                    todasQuadras[quadra.id] = quadra;
+
+                    const option = document.createElement('option');
+                    option.value = quadra.id;
+                    option.textContent = quadra.nome;
+                    quadraEdicaoEl.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Erro ao carregar quadras:", error);
+            }
+        }
+        
+        function getClienteNome(clienteId) {
+            if (!clienteId || !todosClientes[clienteId]) {
+                return "Cliente não encontrado/inválido";
+            }
+            const cliente = todosClientes[clienteId];
+            return cliente.nome || `Cliente #${clienteId.slice(0, 4)}`;
+        }
+        
+        function getClienteObservacao(clienteId) {
+            if (!clienteId || !todosClientes[clienteId]) {
+                return ""; // Retorna vazio se o cliente ou a observação não for encontrada
+            }
+            const cliente = todosClientes[clienteId];
+            return cliente.observacoes || "";
+        }
+        
+        function getQuadraNome(quadraId) {
+            const quadra = todasQuadras[quadraId];
+            return quadra ? quadra.nome : `Quadra #${quadraId.slice(0, 4)}`;
+        }
+        
+        function obterReservasSelecionadas() {
+            const checkboxes = document.querySelectorAll('#lista-reservas-relatorio input[type="checkbox"]:checked');
+            return Array.from(checkboxes).map(cb => cb.dataset.reservaId);
+        }
+
+        function formatarData(dataString) {
+            const [ano, mes, dia] = dataString.split('-');
+            return `${dia}/${mes}/${ano}`;
+        }
+
+        function toggleAcoesEmMassa() {
+            const checkboxesMarcados = document.querySelectorAll('#lista-reservas-relatorio .reserva-checkbox:checked').length;
+            acoesEmMassaContainerEl.style.display = checkboxesMarcados > 0 ? 'block' : 'none';
+        }
+
+        // =========================================================
+        // Lógica de Busca e Exibição
+        // =========================================================
+
+        async function carregarReservas(filtros) {
+            listaReservasRelatorioEl.innerHTML = `<tr><td colspan="10" class="text-center text-muted">Buscando reservas...</td></tr>`;
+            selecionarTodosCheckboxEl.checked = false;
+            try {
+                let query = db.collection('reservas').orderBy('data_reserva', 'desc');
+
+                if (filtros.dataInicio) {
+                    query = query.where('data_reserva', '>=', filtros.dataInicio);
+                }
+                if (filtros.dataFim) {
+                    query = query.where('data_reserva', '<=', filtros.dataFim);
+                }
+                if (filtros.clienteId) {
+                    query = query.where('id_cliente', '==', filtros.clienteId);
+                }
+                if (filtros.statusPagamento) {
+                    query = query.where('pagamento_reserva', '==', filtros.statusPagamento);
+                }
+                if (filtros.statusReserva) {
+                    query = query.where('status_reserva', '==', filtros.statusReserva);
+                }
+
+                const snapshot = await query.get();
+                
+                listaReservasRelatorioEl.innerHTML = '';
+                reservasEncontradas = {};
+
+                if (snapshot.empty) {
+                    listaReservasRelatorioEl.innerHTML = `<tr><td colspan="10" class="text-center text-muted">Nenhuma reserva encontrada com os filtros aplicados.</td></tr>`;
+                    toggleAcoesEmMassa();
+                    return;
+                }
+
+                const reservasFiltradas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                if (filtros.diaSemana) {
+                    const diasDaSemana = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
+                    const diaIndex = diasDaSemana.indexOf(filtros.diaSemana);
+                    const reservasDia = reservasFiltradas.filter(reserva => {
+                        const data = new Date(reserva.data_reserva + 'T00:00:00-03:00');
+                        return data.getDay() === diaIndex;
+                    });
+                    exibirReservas(reservasDia);
+                } else {
+                    exibirReservas(reservasFiltradas);
+                }
+
+            } catch (error) {
+                console.error("Erro ao carregar reservas:", error);
+                listaReservasRelatorioEl.innerHTML = `<tr><td colspan="10" class="text-center text-danger">Erro ao carregar reservas.</td></tr>`;
+                toggleAcoesEmMassa();
+            }
+        }
+        
+        function exibirReservas(reservas) {
+            listaReservasRelatorioEl.innerHTML = '';
+            reservas.forEach(reserva => {
+                reservasEncontradas[reserva.id] = reserva;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><input type="checkbox" data-reserva-id="${reserva.id}" class="reserva-checkbox"></td>
+                    <td>${formatarData(reserva.data_reserva)}</td>
+                    <td>${reserva.hora_inicio}</td>
+                    <td>${getClienteNome(reserva.id_cliente)}</td>
+                    <td>R$ ${parseFloat(reserva.valor).toFixed(2).replace('.', ',')}</td>
+                    <td>${reserva.status_reserva}</td>
+                    <td>${reserva.pagamento_reserva}</td>
+                    <td>${reserva.observacao_reserva || ''}</td>
+                    <td>${getClienteObservacao(reserva.id_cliente)}</td>
+                    <td>
+                        <button class="btn btn-info btn-sm" onclick="abrirModalEdicao('${reserva.id}')">Editar</button>
+                        <button class="btn btn-danger btn-sm" onclick="excluirReserva('${reserva.id}')">Excluir</button>
+                    </td>
+                `;
+                listaReservasRelatorioEl.appendChild(tr);
+            });
+            toggleAcoesEmMassa();
+        }
+
+        // =========================================================
+        // Lógica de Edição e Exclusão
+        // =========================================================
+
+        function abrirModalEdicao(reservaId) {
+            const reserva = reservasEncontradas[reservaId];
+            if (!reserva) {
+                alert('Reserva não encontrada para edição.');
+                return;
+            }
+
+            document.getElementById('reserva-id-edicao').value = reserva.id;
+            document.getElementById('data-reserva-edicao').value = reserva.data_reserva;
+            document.getElementById('hora-inicio-edicao').value = reserva.hora_inicio;
+            document.getElementById('hora-fim-edicao').value = reserva.hora_fim;
+            document.getElementById('cliente-edicao').value = getClienteNome(reserva.id_cliente);
+            document.getElementById('quadra-edicao').value = reserva.id_quadra;
+            document.getElementById('valor-edicao').value = reserva.valor;
+            document.getElementById('pagamento-status-edicao').value = reserva.pagamento_reserva;
+            document.getElementById('reserva-status-edicao').value = reserva.status_reserva;
+            document.getElementById('observacao-edicao').value = reserva.observacao_reserva;
+            
+            // Preenche o campo de observação do cliente, mas ele permanece desabilitado
+            document.getElementById('observacao-cliente-edicao').value = getClienteObservacao(reserva.id_cliente);
+            
+            modalEdicaoReserva.show();
+        }
+
+        async function salvarEdicaoReserva() {
+            const reservaId = document.getElementById('reserva-id-edicao').value;
+            
+            const reservaAtualizada = {
+                valor: parseFloat(document.getElementById('valor-edicao').value),
+                pagamento_reserva: document.getElementById('pagamento-status-edicao').value,
+                status_reserva: document.getElementById('reserva-status-edicao').value,
+                observacao_reserva: document.getElementById('observacao-edicao').value,
+            };
+
+            if (isNaN(reservaAtualizada.valor)) {
+                alert("Valor inválido. Por favor, insira um número.");
+                return;
+            }
+
+            try {
+                await db.collection('reservas').doc(reservaId).update(reservaAtualizada);
+                alert('Reserva atualizada com sucesso!');
+                modalEdicaoReserva.hide();
+                carregarReservas(obterFiltros());
+            } catch (error) {
+                console.error("Erro ao salvar edição da reserva:", error);
+                alert("Erro ao salvar edição. Tente novamente.");
+            }
+        }
+
+        async function excluirReserva(reservaId) {
+            if (confirm("Tem certeza que deseja excluir esta reserva?")) {
+                try {
+                    await db.collection('reservas').doc(reservaId).delete();
+                    alert('Reserva excluída com sucesso!');
+                    carregarReservas(obterFiltros());
+                } catch (error) {
+                    console.error("Erro ao excluir reserva:", error);
+                    alert("Erro ao excluir reserva. Tente novamente.");
+                }
+            }
+        }
+
+        // =========================================================
+        // Ações em Massa
+        // =========================================================
+
+        function alterarStatus(campo, valor) {
+            const ids = obterReservasSelecionadas();
+            if (ids.length === 0) {
+                alert("Nenhuma reserva selecionada.");
+                return;
+            }
+            if (confirm(`Tem certeza que deseja alterar o ${campo} de ${ids.length} reserva(s) para "${valor}"?`)) {
+                const batch = db.batch();
+                ids.forEach(id => {
+                    const docRef = db.collection('reservas').doc(id);
+                    batch.update(docRef, { [campo]: valor });
+                });
+                batch.commit().then(() => {
+                    alert(`Status de ${ids.length} reservas alterado com sucesso!`);
+                    carregarReservas(obterFiltros());
+                }).catch(error => {
+                    console.error("Erro ao alterar status em massa:", error);
+                    alert("Erro ao alterar status. Tente novamente.");
+                });
+            }
+        }
+
+        async function excluirReservasEmMassa() {
+            const ids = obterReservasSelecionadas();
+            if (ids.length === 0) {
+                alert("Nenhuma reserva selecionada.");
+                return;
+            }
+            if (confirm(`Tem certeza que deseja excluir ${ids.length} reserva(s)?`)) {
+                const batch = db.batch();
+                ids.forEach(id => {
+                    const docRef = db.collection('reservas').doc(id);
+                    batch.delete(docRef);
+                });
+                batch.commit().then(() => {
+                    alert(`${ids.length} reservas excluídas com sucesso!`);
+                    carregarReservas(obterFiltros());
+                }).catch(error => {
+                    console.error("Erro ao excluir reservas em massa:", error);
+                    alert("Erro ao excluir reservas. Tente novamente.");
+                });
+            }
+        }
+
+        function limparFiltros() {
+            document.getElementById('form-filtros').reset();
+            carregarReservas(obterFiltros());
+        }
+
+        // =========================================================
+        // Event Listeners
+        // =========================================================
+
+        function obterFiltros() {
+            const clienteNome = document.getElementById('filtro-cliente').value;
+            const clienteEncontrado = Object.values(todosClientes).find(c => c.nome === clienteNome);
+
+            return {
+                dataInicio: document.getElementById('filtro-data-inicio').value,
+                dataFim: document.getElementById('filtro-data-fim').value,
+                clienteId: clienteEncontrado ? clienteEncontrado.id : null,
+                diaSemana: document.getElementById('filtro-dia-semana').value,
+                statusPagamento: document.getElementById('filtro-pagamento-status').value,
+                statusReserva: document.getElementById('filtro-reserva-status').value
+            };
+        }
+
+        formFiltrosEl.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const filtros = obterFiltros();
+            carregarReservas(filtros);
+        });
+
+        btnSalvarEdicaoEl.addEventListener('click', salvarEdicaoReserva);
+        btnLimparFiltrosEl.addEventListener('click', limparFiltros);
+
+        selecionarTodosCheckboxEl.addEventListener('change', (e) => {
+            const isChecked = e.target.checked;
+            document.querySelectorAll('#lista-reservas-relatorio .reserva-checkbox').forEach(checkbox => {
+                checkbox.checked = isChecked;
+            });
+            toggleAcoesEmMassa();
+        });
+
+        listaReservasRelatorioEl.addEventListener('change', (e) => {
+            if (e.target.classList.contains('reserva-checkbox')) {
+                toggleAcoesEmMassa();
+            }
+        });
+
+        btnAplicarPagamentoEl.addEventListener('click', () => {
+            const novoStatus = document.getElementById('status-pagamento-massa').value;
+            if (novoStatus) {
+                alterarStatus('pagamento_reserva', novoStatus);
+            } else {
+                alert('Selecione um novo status de pagamento.');
+            }
+        });
+
+        btnAplicarReservaEl.addEventListener('click', () => {
+            const novoStatus = document.getElementById('status-reserva-massa').value;
+            if (novoStatus) {
+                if (novoStatus === 'aguardando' || novoStatus=== 'confirmada' || novoStatus === 'cancelada' || novoStatus === 'finalizada') {
+                    alterarStatus('status_reserva', novoStatus);
+                } else {
+                    alert('Selecione um novo status de reserva válido (Ativa, Cancelada ou Finalizada).');
+                }
+            } else {
+                alert('Selecione um novo status de reserva.');
+            }
+        });
+
+        btnExcluirMassaEl.addEventListener('click', excluirReservasEmMassa);
+
+
+        // =========================================================
+        // Inicialização da página
+        // =========================================================
+        window.addEventListener('DOMContentLoaded', () => {
+            carregarClientes();
+            carregarQuadras();
+        });
+    </script>
+</body>
+</html>
