@@ -193,9 +193,16 @@ function agruparItensRelatorio(itens){
 }
 
 function getFiltros(){
+  const dataInicio = el('filtro-data-inicio').value;
+  const dataFim = el('filtro-data-fim').value;
+
+  // Quando as duas datas estão vazias, o relatório busca todo o histórico.
+  // Os campos continuam liberados para o usuário selecionar novas datas depois de limpar.
+  const buscarTudoPorDataVazia = !dataInicio && !dataFim;
+
   return {
-    dataInicio: el('filtro-data-inicio').value,
-    dataFim: el('filtro-data-fim').value,
+    dataInicio,
+    dataFim,
     tipoData: el('filtro-tipo-data').value,
     cliente: norm(el('filtro-cliente').value),
     item: norm(el('filtro-item').value),
@@ -203,30 +210,21 @@ function getFiltros(){
     valorMax: parseNumero(el('filtro-valor-max').value),
     status: el('filtro-status').value,
     tipoRelatorio: el('filtro-tipo-relatorio').value,
-    buscarTudo: !!el('filtro-buscar-tudo')?.checked
+    buscarTudo: buscarTudoPorDataVazia
   };
 }
 
 function garantirFiltroInicialData(){
-  const buscarTudo = !!el('filtro-buscar-tudo')?.checked;
-  if (buscarTudo) return;
-  const ini = el('filtro-data-inicio');
-  const fim = el('filtro-data-fim');
-  if (!ini.value && !fim.value) {
-    const hoje = hojeISO();
-    ini.value = hoje;
-    fim.value = hoje;
-  }
+  // A data inicial da página é preenchida no DOMContentLoaded.
+  // Depois de limpar os filtros, datas vazias significam consulta geral.
 }
 
 function atualizarEstadoBuscarTudo(){
-  const checked = !!el('filtro-buscar-tudo')?.checked;
+  // Mantido por compatibilidade. Não desabilita mais os campos de data.
   ['filtro-data-inicio','filtro-data-fim','filtro-tipo-data'].forEach(id => {
     const campo = el(id);
-    if (campo) campo.disabled = checked;
+    if (campo) campo.disabled = false;
   });
-  const aviso = el('aviso-busca-tudo');
-  if (aviso) aviso.classList.toggle('d-none', !checked);
 }
 
 function passaFiltroDataComanda(c, filtros){
@@ -363,6 +361,122 @@ function atualizarResumo(comandas, reservasPagas){
   el('resumo-antigas-sem-forma').textContent = antigas;
 }
 
+
+function tituloTopClientes(tipo){
+  if (tipo === 'top-reservas') return 'Top reservas por cliente';
+  if (tipo === 'top-produtos') return 'Top produtos por cliente';
+  return 'Top compradores por cliente';
+}
+
+function isGrupoNaoPagou(c){
+  const texto = norm(`${c?.reserva_time_id || ''} ${c?.reserva_time_label || ''} ${c?.comanda_grupo || ''} ${c?.grupo || ''}`);
+  return texto.includes('nao pagou') || texto.includes('nao_pago') || texto.includes('grp_nao_pagou');
+}
+
+function isComandaValidaParaRanking(c){
+  const status = norm(c?.status_comanda || c?.status || '');
+  if (isGrupoNaoPagou(c)) return false;
+  if (status.includes('cancel')) return false;
+  return status === 'paga';
+}
+
+function montarTopClientes(comandas, tipo){
+  const mapa = new Map();
+
+  comandas.forEach(c => {
+    // Ranking de melhores clientes deve considerar somente venda de fato concluída.
+    // Exclui comandas abertas, excluídas/canceladas e vínculos marcados como "Não pagou".
+    if (!isComandaValidaParaRanking(c)) return;
+
+    const cliente = String(c.cliente || c.cliente_nome || 'Cliente sem nome').trim() || 'Cliente sem nome';
+    const key = norm(cliente) || `sem_nome_${c.id || Math.random()}`;
+    const reservas = totalReservasComanda(c);
+    const produtos = totalProdutosComanda(c);
+    const total = totalComanda(c);
+    const valorRanking = tipo === 'top-reservas' ? reservas : tipo === 'top-produtos' ? produtos : total;
+
+    if (valorRanking <= 0) return;
+
+    if (!mapa.has(key)) {
+      mapa.set(key, {
+        id: `top-${mapa.size}`,
+        cliente,
+        qtdComandas: 0,
+        qtdReservas: 0,
+        qtdProdutos: 0,
+        valorReservas: 0,
+        valorProdutos: 0,
+        valorTotal: 0,
+        valorRanking: 0,
+        ultimaData: null,
+        comandas: []
+      });
+    }
+
+    const item = mapa.get(key);
+    item.qtdComandas += 1;
+    item.valorReservas += reservas;
+    item.valorProdutos += produtos;
+    item.valorTotal += total;
+    item.valorRanking += valorRanking;
+    item.qtdReservas += itensComanda(c).filter(isItemReserva).reduce((s, it) => s + Number(it.quantidade || 1), 0);
+    item.qtdProdutos += itensComanda(c).filter(it => !isItemReserva(it)).reduce((s, it) => s + Number(it.quantidade || 1), 0);
+    item.comandas.push(c);
+
+    const data = toDate(dataOrdenacaoComanda(c));
+    if (data && (!item.ultimaData || data > item.ultimaData)) item.ultimaData = data;
+  });
+
+  return Array.from(mapa.values())
+    .sort((a,b) => (b.valorRanking - a.valorRanking) || (b.valorTotal - a.valorTotal) || a.cliente.localeCompare(b.cliente))
+    .map((item, index) => ({ ...item, posicao: index + 1 }));
+}
+
+function renderTopClientes(ranking, tipo){
+  modoAtual = tipo;
+  resultadoAtual = ranking;
+  el('titulo-tabela').textContent = tituloTopClientes(tipo);
+
+  const colunaDestaque = tipo === 'top-reservas'
+    ? 'Total em reservas'
+    : tipo === 'top-produtos'
+      ? 'Total em produtos'
+      : 'Total comprado';
+
+  el('thead-relatorio').innerHTML = `
+    <tr>
+      <th class="text-center">#</th>
+      <th>Cliente</th>
+      <th class="text-end">Comandas</th>
+      <th class="text-end">Reservas</th>
+      <th class="text-end">Produtos</th>
+      <th class="text-end">Qtd. reservas</th>
+      <th class="text-end">Qtd. produtos</th>
+      <th class="text-end">${colunaDestaque}</th>
+      <th>Última movimentação</th>
+      <th></th>
+    </tr>`;
+
+  if (!ranking.length) {
+    el('tbody-relatorio').innerHTML = `<tr><td colspan="10" class="text-center text-muted p-4">Nenhum cliente encontrado para montar o ranking com os filtros informados.</td></tr>`;
+    return;
+  }
+
+  el('tbody-relatorio').innerHTML = ranking.map(item => `
+    <tr>
+      <td class="text-center"><span class="rank-badge">${item.posicao}</span></td>
+      <td><strong>${escapeHtml(item.cliente)}</strong></td>
+      <td class="text-end">${item.qtdComandas}</td>
+      <td class="text-end valor">${fmtBR(item.valorReservas)}</td>
+      <td class="text-end valor">${fmtBR(item.valorProdutos)}</td>
+      <td class="text-end">${item.qtdReservas}</td>
+      <td class="text-end">${item.qtdProdutos}</td>
+      <td class="text-end valor">${fmtBR(item.valorRanking)}</td>
+      <td>${item.ultimaData ? fmtDataHora(item.ultimaData) : '-'}</td>
+      <td class="text-end"><button class="btn btn-outline-primary btn-sm" onclick="abrirDetalheTopCliente('${escapeHtml(item.id)}')">Detalhes</button></td>
+    </tr>`).join('');
+}
+
 function zerarResumo(){
   atualizarResumo([], []);
 }
@@ -455,6 +569,8 @@ function aplicarFiltros(){
 
   if (filtros.tipoRelatorio === 'reservas-pagas') {
     renderReservasPagas(reservasPagasFiltradas);
+  } else if (['top-compradores', 'top-reservas', 'top-produtos'].includes(filtros.tipoRelatorio)) {
+    renderTopClientes(montarTopClientes(comandasFiltradas, filtros.tipoRelatorio), filtros.tipoRelatorio);
   } else {
     renderComandas(comandasFiltradas);
   }
@@ -743,15 +859,64 @@ window.abrirDetalheReservaPaga = function(id){
   modalDetalhe.show();
 };
 
+
+window.abrirDetalheTopCliente = function(id){
+  const item = resultadoAtual.find(x => String(x.id) === String(id));
+  if (!item) return;
+
+  el('modalDetalheRelatorioLabel').textContent = `Top cliente - ${item.cliente || ''}`;
+  const linhas = item.comandas
+    .slice()
+    .sort((a,b) => (toDate(dataOrdenacaoComanda(b))?.getTime() || 0) - (toDate(dataOrdenacaoComanda(a))?.getTime() || 0))
+    .map(c => `
+      <tr>
+        <td>${fmtDataHora(dataOrdenacaoComanda(c))}</td>
+        <td>${badgeStatus(c.status_comanda)}</td>
+        <td class="text-truncate-2">${resumoItens(c)}</td>
+        <td class="text-end">${fmtBR(totalReservasComanda(c))}</td>
+        <td class="text-end">${fmtBR(totalProdutosComanda(c))}</td>
+        <td class="text-end valor">${fmtBR(totalComanda(c))}</td>
+      </tr>`).join('');
+
+  el('modal-detalhe-body').innerHTML = `
+    <div class="row g-2 mb-3">
+      <div class="col-md-3"><div class="metric-card"><span>Comandas</span><strong>${item.qtdComandas}</strong></div></div>
+      <div class="col-md-3"><div class="metric-card"><span>Reservas</span><strong>${fmtBR(item.valorReservas)}</strong></div></div>
+      <div class="col-md-3"><div class="metric-card"><span>Produtos</span><strong>${fmtBR(item.valorProdutos)}</strong></div></div>
+      <div class="col-md-3"><div class="metric-card"><span>Total</span><strong>${fmtBR(item.valorTotal)}</strong></div></div>
+    </div>
+    <p><strong>Cliente:</strong> ${escapeHtml(item.cliente || '-')}</p>
+    <p><strong>Qtd. reservas:</strong> ${escapeHtml(item.qtdReservas || 0)} &nbsp; <strong>Qtd. produtos:</strong> ${escapeHtml(item.qtdProdutos || 0)}</p>
+    <h6>Comandas usadas neste ranking</h6>
+    <div class="table-responsive">
+      <table class="table table-sm table-bordered align-middle">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Status</th>
+            <th>Itens</th>
+            <th class="text-end">Reservas</th>
+            <th class="text-end">Produtos</th>
+            <th class="text-end">Total</th>
+          </tr>
+        </thead>
+        <tbody>${linhas || '<tr><td colspan="6" class="text-center text-muted">Sem comandas.</td></tr>'}</tbody>
+      </table>
+    </div>`;
+
+  modalDetalhe.show();
+};
+
 function limparFiltros(){
   ['filtro-cliente','filtro-item','filtro-valor-min','filtro-valor-max'].forEach(id => el(id).value = '');
-  const hoje = hojeISO();
-  el('filtro-data-inicio').value = hoje;
-  el('filtro-data-fim').value = hoje;
+
+  // Limpar filtros remove as datas e deixa os campos livres.
+  // Datas vazias significam consultar todos os períodos; depois o usuário pode selecionar novas datas normalmente.
+  el('filtro-data-inicio').value = '';
+  el('filtro-data-fim').value = '';
   el('filtro-tipo-data').value = 'qualquer';
   el('filtro-status').value = 'todas';
   el('filtro-tipo-relatorio').value = 'todas';
-  if (el('filtro-buscar-tudo')) el('filtro-buscar-tudo').checked = false;
   atualizarEstadoBuscarTudo();
   carregarBase();
 }
@@ -771,6 +936,17 @@ function exportarCSV(){
       r.temForma ? Number(r.pix || 0).toFixed(2) : '',
       r.temForma ? Number(r.cartao || 0).toFixed(2) : '',
       r.funcionario || '', r.origemLabel, r.comandaId || ''
+    ]));
+  } else if (['top-compradores', 'top-reservas', 'top-produtos'].includes(modoAtual)) {
+    linhas.push(['Posição','Cliente','Comandas','Valor reservas','Valor produtos','Qtd reservas','Qtd produtos','Total ranking','Total geral','Última movimentação']);
+    resultadoAtual.forEach(item => linhas.push([
+      item.posicao, item.cliente, item.qtdComandas,
+      Number(item.valorReservas || 0).toFixed(2),
+      Number(item.valorProdutos || 0).toFixed(2),
+      item.qtdReservas || 0, item.qtdProdutos || 0,
+      Number(item.valorRanking || 0).toFixed(2),
+      Number(item.valorTotal || 0).toFixed(2),
+      item.ultimaData ? fmtDataHora(item.ultimaData) : ''
     ]));
   } else {
     linhas.push(['Abertura','Pagamento','Exclusão','Cliente','Status','Obs/Motivo','Itens','Reservas','Produtos','Total','Reservas vinculadas']);
@@ -807,10 +983,6 @@ document.addEventListener('DOMContentLoaded', () => {
   el('btn-limpar').addEventListener('click', limparFiltros);
   el('btn-atualizar-base').addEventListener('click', carregarBase);
   el('btn-exportar-csv').addEventListener('click', exportarCSV);
-
-  if (el('filtro-buscar-tudo')) {
-    el('filtro-buscar-tudo').addEventListener('change', atualizarEstadoBuscarTudo);
-  }
 
   ['filtro-cliente','filtro-item','filtro-valor-min','filtro-valor-max'].forEach(id => {
     el(id).addEventListener('keydown', ev => {
