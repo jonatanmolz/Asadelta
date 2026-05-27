@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatório de Comandas - AsaDelta Esportes</title>
+
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <link rel="stylesheet" href="relatorioComandas.css">
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg" style="background:#28a745;">
+    <div class="container-fluid">
+      <a class="navbar-brand text-white fw-bold" href="#">
+        <i class="bi bi-trophy-fill me-2"></i>AsaDelta Esportes
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="clientes.html">Clientes</a></li>
+          <li class="nav-item"><a class="nav-link" href="quadras.html">Quadras</a></li>
+          <li class="nav-item"><a class="nav-link" href="produtos.html">Produtos</a></li>
+          <li class="nav-item"><a class="nav-link" href="reservas.html">Reservas PC</a></li>
+          <li class="nav-item"><a class="nav-link" href="reservasMobile.html">Reservas Mobile</a></li>
+          <li class="nav-item"><a class="nav-link" href="comandas.html">Comandas</a></li>
+          <li class="nav-item"><a class="nav-link" href="relatorios.html">Relatórios</a></li>
+          <li class="nav-item"><a class="nav-link active" href="relatorioComandas.html">Rel. Comandas</a></li>
+          <li class="nav-item"><a class="nav-link" href="relatorioReservas.html">Rel. Reservas</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container-fluid my-3 relatorio-wrap">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+      <div>
+        <h1 class="h4 mb-1">Relatório de Comandas</h1>
+        <div class="text-muted small">A página inicia filtrando a data de hoje para carregar mais rápido. Marque “Buscar todos os períodos” apenas quando precisar consultar todo o histórico.</div>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary btn-sm" id="btn-atualizar-base"><i class="bi bi-arrow-clockwise"></i> Atualizar base</button>
+        <button class="btn btn-success btn-sm" id="btn-exportar-csv"><i class="bi bi-filetype-csv"></i> Exportar CSV</button>
+      </div>
+    </div>
+
+    <section class="card shadow-sm mb-3 filtro-card">
+      <div class="card-body">
+        <div class="row g-2 align-items-end">
+          <div class="col-6 col-md-2">
+            <label class="form-label small" for="filtro-data-inicio">Data inicial</label>
+            <input type="date" class="form-control form-control-sm" id="filtro-data-inicio">
+          </div>
+          <div class="col-6 col-md-2">
+            <label class="form-label small" for="filtro-data-fim">Data final</label>
+            <input type="date" class="form-control form-control-sm" id="filtro-data-fim">
+          </div>
+          <div class="col-12 col-md-2">
+            <label class="form-label small" for="filtro-tipo-data">Filtrar data por</label>
+            <select class="form-select form-select-sm" id="filtro-tipo-data">
+              <option value="qualquer">Abertura ou pagamento</option>
+              <option value="abertura">Data de abertura</option>
+              <option value="pagamento">Data de pagamento</option>
+              <option value="exclusao">Data de exclusão</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-2">
+            <label class="form-label small" for="filtro-cliente">Cliente</label>
+            <input type="text" class="form-control form-control-sm" id="filtro-cliente" placeholder="Nome do cliente...">
+          </div>
+          <div class="col-12 col-md-2">
+            <label class="form-label small" for="filtro-item">Produto ou reserva</label>
+            <input type="text" class="form-control form-control-sm" id="filtro-item" placeholder="Ex.: Heineken, quadra...">
+          </div>
+          <div class="col-6 col-md-1">
+            <label class="form-label small" for="filtro-valor-min">Valor min.</label>
+            <input type="number" step="0.01" class="form-control form-control-sm" id="filtro-valor-min" placeholder="0,00">
+          </div>
+          <div class="col-6 col-md-1">
+            <label class="form-label small" for="filtro-valor-max">Valor max.</label>
+            <input type="number" step="0.01" class="form-control form-control-sm" id="filtro-valor-max" placeholder="999,00">
+          </div>
+        </div>
+
+        <div class="row g-2 align-items-end mt-1">
+          <div class="col-12 col-md-3">
+            <label class="form-label small" for="filtro-status">Status da comanda</label>
+            <select class="form-select form-select-sm" id="filtro-status">
+              <option value="todas">Todas</option>
+              <option value="Aberta">Abertas</option>
+              <option value="Paga">Pagas</option>
+              <option value="Excluída">Excluídas / não pagas</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label small" for="filtro-tipo-relatorio">Tipo de relatório</label>
+            <select class="form-select form-select-sm" id="filtro-tipo-relatorio">
+              <option value="todas">Todas as comandas</option>
+              <option value="com-reserva">Somente comandas com reserva</option>
+              <option value="com-produto">Somente comandas com produtos</option>
+              <option value="reservas-pagas">Somente reservas pagas / forma de pagamento</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-5">
+            <div class="d-flex flex-wrap gap-2 justify-content-md-end align-items-center">
+              <div class="form-check form-switch me-md-auto small buscar-tudo-wrap">
+                <input class="form-check-input" type="checkbox" role="switch" id="filtro-buscar-tudo">
+                <label class="form-check-label" for="filtro-buscar-tudo">Buscar todos os períodos</label>
+              </div>
+              <button class="btn btn-primary btn-sm" id="btn-buscar"><i class="bi bi-search"></i> Buscar</button>
+              <button class="btn btn-outline-secondary btn-sm" id="btn-limpar"><i class="bi bi-eraser"></i> Limpar filtros</button>
+            </div>
+            <div id="aviso-busca-tudo" class="form-text text-danger mt-1 d-none">Essa opção carrega todo o histórico e pode demorar mais.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="row g-2 mb-3" id="cards-resumo">
+      <div class="col-6 col-md-2"><div class="metric-card"><span>Comandas</span><strong id="resumo-comandas">0</strong></div></div>
+      <div class="col-6 col-md-2"><div class="metric-card"><span>Valor comandas</span><strong id="resumo-valor-comandas">R$ 0,00</strong></div></div>
+      <div class="col-6 col-md-2"><div class="metric-card"><span>Reservas</span><strong id="resumo-reservas">R$ 0,00</strong></div></div>
+      <div class="col-6 col-md-2"><div class="metric-card"><span>Produtos</span><strong id="resumo-produtos">R$ 0,00</strong></div></div>
+      <div class="col-6 col-md-2"><div class="metric-card"><span>Reg. reservas pagas</span><strong id="resumo-registros-reservas">0</strong></div></div>
+      <div class="col-6 col-md-2"><div class="metric-card"><span>Sem forma antiga</span><strong id="resumo-antigas-sem-forma">0</strong></div></div>
+    </section>
+
+    <section class="card shadow-sm">
+      <div class="card-header bg-white d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <h2 class="h6 mb-0" id="titulo-tabela">Comandas encontradas</h2>
+        <div class="small text-muted" id="status-carregamento">Carregando somente a data de hoje...</div>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-sm table-hover align-middle mb-0 relatorio-table" id="tabela-relatorio">
+            <thead id="thead-relatorio"></thead>
+            <tbody id="tbody-relatorio">
+              <tr><td class="text-center text-muted p-4">Carregando somente a data de hoje...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal fade" id="modalDetalheRelatorio" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalDetalheRelatorioLabel">Detalhes</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body" id="modal-detalhe-body"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="relatorioComandas.js"></script>
+</body>
+</html>

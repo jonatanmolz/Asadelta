@@ -1,0 +1,73 @@
+body{
+  background:#f4f4f4;
+  color:#1e1e1e;
+  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+.navbar, header, .topbar{
+  background-color:rgba(5,20,15,.35)!important;
+  backdrop-filter:blur(4px);
+}
+.navbar .nav-link{color:#fff!important;font-weight:600;border-radius:8px;padding:6px 10px;}
+.navbar .nav-link:hover,.navbar .nav-link.active{background:rgba(255,255,255,.18);}
+.navbar-toggler{border-color:rgba(255,255,255,.35);}
+.navbar-toggler-icon{filter:invert(1);}
+.relatorio-wrap{max-width:96%;}
+.card{border-radius:14px;border:1px solid rgba(0,0,0,.06);}
+.filtro-card .form-label{font-weight:600;color:#355c4b;margin-bottom:4px;}
+.form-control,.form-select{border-radius:10px;}
+.btn{border-radius:999px;font-weight:600;}
+.metric-card{
+  background:#fff;
+  border:1px solid rgba(0,0,0,.06);
+  border-radius:14px;
+  box-shadow:0 6px 18px rgba(0,0,0,.06);
+  padding:10px 12px;
+  min-height:70px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:3px;
+}
+.metric-card span{font-size:.78rem;color:#607468;font-weight:700;text-transform:uppercase;letter-spacing:.02em;}
+.metric-card strong{font-size:1rem;color:#0d6d4d;}
+.relatorio-table{font-size:.84rem;}
+.relatorio-table thead th{
+  position:sticky;
+  top:0;
+  z-index:2;
+  background:#f6faf8;
+  color:#163d2f;
+  border-bottom:1px solid rgba(0,0,0,.08);
+  white-space:nowrap;
+}
+.relatorio-table td{vertical-align:middle;}
+.item-lista{margin:0;padding-left:16px;}
+.item-lista li{margin-bottom:2px;}
+.badge-soft{
+  display:inline-flex;
+  align-items:center;
+  border-radius:999px;
+  padding:4px 8px;
+  background:#eef6f2;
+  color:#0d6d4d;
+  font-weight:700;
+  font-size:.75rem;
+}
+.badge-antigo{background:#fff3cd;color:#7a5c00;}
+.badge-novo{background:#e7f5ff;color:#075985;}
+.badge-aberta{background:#fff3cd;color:#7a5c00;}
+.badge-paga{background:#d1e7dd;color:#0f5132;}
+.valor{font-weight:800;color:#0d6d4d;white-space:nowrap;}
+.text-truncate-2{max-width:360px;white-space:normal;line-height:1.25;}
+.modal-content{border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.35);}
+.modal-header{background:#f4faf7;color:#0b2c22;border-bottom:1px solid rgba(0,0,0,.08);}
+@media (max-width:768px){
+  .relatorio-wrap{max-width:100%;}
+  .relatorio-table{font-size:.78rem;}
+  .metric-card{min-height:62px;padding:8px 10px;}
+  .metric-card strong{font-size:.9rem;}
+}
+
+.badge-excluida{background:#f8d7da;color:#842029;}
+.buscar-tudo-wrap{background:#f6faf8;border:1px solid rgba(0,0,0,.06);border-radius:999px;padding:6px 12px 6px 36px;}
+#aviso-busca-tudo{font-weight:600;}
