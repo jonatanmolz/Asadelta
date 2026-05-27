@@ -69,5 +69,17 @@ body{
 }
 
 .badge-excluida{background:#f8d7da;color:#842029;}
-.buscar-tudo-wrap{background:#f6faf8;border:1px solid rgba(0,0,0,.06);border-radius:999px;padding:6px 12px 6px 36px;}
-#aviso-busca-tudo{font-weight:600;}
+
+.rank-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:28px;
+  height:28px;
+  padding:0 8px;
+  border-radius:999px;
+  background:#eef6f2;
+  color:#0d6d4d;
+  font-weight:800;
+  border:1px solid rgba(13,109,77,.18);
+}
