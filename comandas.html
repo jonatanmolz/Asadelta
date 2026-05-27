@@ -166,64 +166,6 @@
                 </table>
             </div>
         </section>
-        
-        <section id="reservas-futuras" class="mt-5">
-            <h2 class="fs-4">Abrir Comanda com Reservas Futuras</h2>
-            <div class="card shadow-sm p-3 mb-4">
-                <h5 class="card-title fs-6">Buscar Reservas de Cliente</h5>
-                <div class="row g-2">
-                    <div class="col-md-5">
-                        <label for="cliente-busca-reserva" class="form-label small">Cliente</label>
-                        <input class="form-control form-control-sm" list="lista-clientes-datalist" id="cliente-busca-reserva" placeholder="Buscar cliente...">
-                    </div>
-                    <div class="col-md-3">
-                        <label for="mes-busca" class="form-label small">Mês</label>
-                        <select class="form-select form-select-sm" id="mes-busca"></select>
-                    </div>
-                    <div class="col-md-2">
-                        <label for="ano-busca" class="form-label small">Ano</label>
-                        <select class="form-select form-select-sm" id="ano-busca"></select>
-                    </div>
-                    <div class="col-md-2 d-flex align-items-end">
-                        <button type="button" class="btn btn-primary btn-sm w-100" id="btn-buscar-reservas-futuras">Buscar Reservas</button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="historico-vendas" class="mt-5">
-            <h2 class="fs-4">Histórico de Vendas e Comandas Pagas</h2>
-            <div class="card shadow-sm p-3">
-                <div class="d-flex align-items-center mb-3">
-                    <label for="filtro-data" class="form-label me-2 mb-0 small">Filtrar por data:</label>
-                    <input type="date" class="form-control form-control-sm me-3" id="filtro-data" style="max-width: 150px;">
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-sm btn-outline-secondary active" id="btn-filtro-ambos">Ambos</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-filtro-comandas">Comandas</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-filtro-vendas">Vendas</button>
-                    </div>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-bordered table-striped small">
-                        <thead>
-                            <tr>
-                                <th>Tipo</th>
-                                <th>Cliente / ID</th>
-                                <th>Data e Hora</th>
-                                <th>Total</th>
-                                <th>Detalhes</th>
-                            </tr>
-                        </thead>
-                        <tbody id="lista-historico">
-                            <tr>
-                                <td colspan="5" class="text-center text-muted">Selecione uma data para ver o histórico.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
         <div class="modal fade" id="adicionarItemModal" tabindex="-1" aria-labelledby="adicionarItemModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
