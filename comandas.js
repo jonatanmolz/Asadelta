@@ -1816,6 +1816,8 @@ async function atualizarValorReserva(reservaId, novoValor){
          * Preenche os selects de mês e ano para a busca de reservas futuras.
          */
         function popularSeletoresDeData() {
+            // Se a seção visual de reservas futuras foi removida da página, não faz nada.
+            if (!mesBuscaEl || !anoBuscaEl) return;
             const hoje = new Date();
             const anoAtual = hoje.getFullYear();
             const mesAtual = hoje.getMonth();
@@ -1846,6 +1848,10 @@ async function atualizarValorReserva(reservaId, novoValor){
          * Busca reservas futuras com base no cliente, mês e ano selecionados.
          */
         async function buscarReservasFuturas() {
+            if (!clienteBuscaInput || !mesBuscaEl || !anoBuscaEl) {
+                console.warn('Seção de reservas futuras não está disponível nesta página.');
+                return;
+            }
             const clienteNome = clienteBuscaInput.value.trim();
             const mes = mesBuscaEl.value;
             const ano = anoBuscaEl.value;
@@ -1938,6 +1944,10 @@ async function atualizarValorReserva(reservaId, novoValor){
          * Cria uma comanda para as reservas selecionadas no modal, usando os valores editados.
          */
         async function abrirComandaComReservasSelecionadas() {
+            if (!clienteBuscaInput) {
+                alert('A busca por reservas futuras foi removida desta página. Use o botão Adicionar Itens > Adicionar Reservas na comanda.');
+                return;
+            }
             const checkboxes = document.querySelectorAll('.reserva-checkbox:checked');
             if (checkboxes.length === 0) {
                 alert('Selecione pelo menos uma reserva para abrir a comanda.');
@@ -3049,6 +3059,8 @@ async function atualizarValorReserva(reservaId, novoValor){
         }
         
         async function carregarHistoricoDeVendas() {
+            // Histórico foi movido para relatorioComandas.html.
+            if (!filtroDataEl || !listaHistoricoEl) return;
             const dataFiltro = filtroDataEl.value;
             listaHistoricoEl.innerHTML = `<tr><td colspan="5" class="text-center text-muted">Carregando...</td></tr>`;
 
@@ -3291,16 +3303,21 @@ async function atualizarValorReserva(reservaId, novoValor){
             });
         }
 
-        // Event Listeners para Reservas Futuras (AGORA CHAMANDO AS FUNÇÕES ATUALIZADAS)
-        btnBuscarReservasFuturas.addEventListener('click', buscarReservasFuturas);
-        btnAbrirComandaFuturas.addEventListener('click', abrirComandaComReservasSelecionadas);
-
-        selecionarTodasReservasEl.addEventListener('change', (event) => {
-            const isChecked = event.target.checked;
-            document.querySelectorAll('.reserva-checkbox').forEach(checkbox => {
-                checkbox.checked = isChecked;
+        // Event Listeners para Reservas Futuras (se a seção existir na página)
+        if (btnBuscarReservasFuturas) {
+            btnBuscarReservasFuturas.addEventListener('click', buscarReservasFuturas);
+        }
+        if (btnAbrirComandaFuturas) {
+            btnAbrirComandaFuturas.addEventListener('click', abrirComandaComReservasSelecionadas);
+        }
+        if (selecionarTodasReservasEl) {
+            selecionarTodasReservasEl.addEventListener('change', (event) => {
+                const isChecked = event.target.checked;
+                document.querySelectorAll('.reserva-checkbox').forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                });
             });
-        });
+        }
 
         btnFinalizarPagamentoModal.addEventListener('click', finalizarPagamento);
         valorRecebidoInput.addEventListener('input', (event) => {});
@@ -3311,33 +3328,41 @@ async function atualizarValorReserva(reservaId, novoValor){
             btnSalvarFormaPagamentoReserva.addEventListener('click', salvarFormaPagamentoReservaPaga);
         }
 
-        // Event Listeners do Histórico
-        filtroDataEl.addEventListener('change', carregarHistoricoDeVendas);
-        btnFiltroAmbos.addEventListener('click', (e) => {
-            tipoFiltroHistorico = 'Ambos';
-            document.querySelectorAll('.btn-group .btn').forEach(btn => btn.classList.remove('active'));
-            e.target.classList.add('active');
-            carregarHistoricoDeVendas();
-        });
-        btnFiltroComandas.addEventListener('click', (e) => {
-            tipoFiltroHistorico = 'Comandas';
-            document.querySelectorAll('.btn-group .btn').forEach(btn => btn.classList.remove('active'));
-            e.target.classList.add('active');
-            carregarHistoricoDeVendas();
-        });
-        btnFiltroVendas.addEventListener('click', (e) => {
-            tipoFiltroHistorico = 'Vendas';
-            document.querySelectorAll('.btn-group .btn').forEach(btn => btn.classList.remove('active'));
-            e.target.classList.add('active');
-            carregarHistoricoDeVendas();
-        });
+        // Event Listeners do Histórico (mantido apenas se a seção existir; relatório agora fica na página própria)
+        if (filtroDataEl) {
+            filtroDataEl.addEventListener('change', carregarHistoricoDeVendas);
+        }
+        if (btnFiltroAmbos) {
+            btnFiltroAmbos.addEventListener('click', (e) => {
+                tipoFiltroHistorico = 'Ambos';
+                document.querySelectorAll('.btn-group .btn').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                carregarHistoricoDeVendas();
+            });
+        }
+        if (btnFiltroComandas) {
+            btnFiltroComandas.addEventListener('click', (e) => {
+                tipoFiltroHistorico = 'Comandas';
+                document.querySelectorAll('.btn-group .btn').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                carregarHistoricoDeVendas();
+            });
+        }
+        if (btnFiltroVendas) {
+            btnFiltroVendas.addEventListener('click', (e) => {
+                tipoFiltroHistorico = 'Vendas';
+                document.querySelectorAll('.btn-group .btn').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                carregarHistoricoDeVendas();
+            });
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             const hoje = new Date();
             const ano = hoje.getFullYear();
             const mes = String(hoje.getMonth() + 1).padStart(2, '0');
             const dia = String(hoje.getDate()).padStart(2, '0');
-            filtroDataEl.value = `${ano}-${mes}-${dia}`;
+            if (filtroDataEl) filtroDataEl.value = `${ano}-${mes}-${dia}`;
             
             carregarProdutos();
             carregarClientes();
@@ -3346,7 +3371,7 @@ async function atualizarValorReserva(reservaId, novoValor){
             iniciarEscutaReservasDoDia();
             __ensureUIReservasNaoPagas();
             popularSeletoresDeData();
-            carregarHistoricoDeVendas();
+            if (filtroDataEl && listaHistoricoEl) carregarHistoricoDeVendas();
         });
     
 
