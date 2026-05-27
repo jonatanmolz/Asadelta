@@ -43,7 +43,7 @@
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
       <div>
         <h1 class="h4 mb-1">Relatório de Comandas</h1>
-        <div class="text-muted small">A página inicia filtrando a data de hoje para carregar mais rápido. Marque “Buscar todos os períodos” apenas quando precisar consultar todo o histórico.</div>
+        <div class="text-muted small">A página inicia filtrando a data de hoje para carregar mais rápido. Para consultar todo o histórico, clique em “Limpar filtros” e depois em “Buscar”.</div>
       </div>
       <div class="d-flex gap-2">
         <button class="btn btn-outline-secondary btn-sm" id="btn-atualizar-base"><i class="bi bi-arrow-clockwise"></i> Atualizar base</button>
@@ -106,18 +106,17 @@
               <option value="com-reserva">Somente comandas com reserva</option>
               <option value="com-produto">Somente comandas com produtos</option>
               <option value="reservas-pagas">Somente reservas pagas / forma de pagamento</option>
+              <option value="top-compradores">Top compradores</option>
+              <option value="top-reservas">Top reservas</option>
+              <option value="top-produtos">Top produtos</option>
             </select>
           </div>
           <div class="col-12 col-md-5">
             <div class="d-flex flex-wrap gap-2 justify-content-md-end align-items-center">
-              <div class="form-check form-switch me-md-auto small buscar-tudo-wrap">
-                <input class="form-check-input" type="checkbox" role="switch" id="filtro-buscar-tudo">
-                <label class="form-check-label" for="filtro-buscar-tudo">Buscar todos os períodos</label>
-              </div>
               <button class="btn btn-primary btn-sm" id="btn-buscar"><i class="bi bi-search"></i> Buscar</button>
-              <button class="btn btn-outline-secondary btn-sm" id="btn-limpar"><i class="bi bi-eraser"></i> Limpar filtros</button>
+              <button class="btn btn-outline-secondary btn-sm" id="btn-limpar" title="Limpa os campos, apaga as datas e deixa a busca liberada para todos os períodos"><i class="bi bi-eraser"></i> Limpar filtros</button>
             </div>
-            <div id="aviso-busca-tudo" class="form-text text-danger mt-1 d-none">Essa opção carrega todo o histórico e pode demorar mais.</div>
+            <div class="form-text text-muted mt-1">Datas vazias buscam todo o histórico. Para filtrar novamente, selecione a data inicial e/ou final e clique em Buscar.</div>
           </div>
         </div>
       </div>
