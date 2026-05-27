@@ -36,6 +36,7 @@
                     <li class="nav-item"><a class="nav-link" href="reservasMobile.html">Reservas Mobile</a></li>
                     <li class="nav-item"><a class="nav-link" href="comandas.html">Comandas</a></li>
                     <li class="nav-item"><a class="nav-link" href="relatorios.html">Relatórios</a></li>
+                    <li class="nav-item"><a class="nav-link" href="relatorioComandas.html">Rel. Comandas</a></li>
                     <li class="nav-item"><a class="nav-link" href="relatorioReservas.html">Rel. Reservas</a></li>
                 </ul>
       </div>
@@ -247,6 +248,64 @@
                                 <button type="button" class="btn btn-secondary" id="btn-adicionar-item-manual">Adicionar Item</button>
                             </div>
                         </div>
+
+                        <hr class="my-3">
+
+                        <div class="d-grid">
+                            <button type="button" class="btn btn-outline-success" id="btn-abrir-modal-reservas-comanda">
+                                <i class="bi bi-calendar-plus"></i> Adicionar Reservas
+                            </button>
+                        </div>
+                        <div class="form-text mt-2">
+                            Se a comanda estiver com o nome de um cliente cadastrado, serão listadas todas as reservas não pagas dele. Caso contrário, serão listadas as reservas não pagas de hoje.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalAdicionarReservasComanda" tabindex="-1" aria-labelledby="modalAdicionarReservasComandaLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-scrollable modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div>
+                            <h5 class="modal-title mb-0" id="modalAdicionarReservasComandaLabel">Adicionar Reservas à Comanda</h5>
+                            <div class="small text-muted" id="reservas-comanda-info">Selecione as reservas que deseja adicionar.</div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+                            <input type="text" class="form-control form-control-sm" id="reservas-comanda-busca" style="max-width: 360px;" placeholder="Buscar por cliente, data, quadra ou horário...">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-atualizar-reservas-comanda">Atualizar</button>
+                            <div class="form-check ms-auto">
+                                <input class="form-check-input" type="checkbox" id="reservas-comanda-selecionar-todas">
+                                <label class="form-check-label small" for="reservas-comanda-selecionar-todas">Selecionar todas</label>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped table-hover align-middle">
+                                <thead>
+                                    <tr class="small">
+                                        <th style="width: 36px;"></th>
+                                        <th>Cliente</th>
+                                        <th>Data</th>
+                                        <th>Quadra</th>
+                                        <th>Horário</th>
+                                        <th class="text-end" style="width: 150px;">Valor</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reservas-comanda-tbody">
+                                    <tr><td colspan="7" class="text-center text-muted small">Clique em atualizar para carregar as reservas.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Voltar</button>
+                        <button type="button" class="btn btn-success" id="btn-confirmar-adicionar-reservas-comanda">Adicionar reservas selecionadas</button>
                     </div>
                 </div>
             </div>
@@ -300,6 +359,57 @@
             </div>
         </div>
         
+
+
+        <div class="modal fade" id="modalFormaPagamentoReserva" tabindex="-1" aria-labelledby="modalFormaPagamentoReservaLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div>
+                            <h5 class="modal-title mb-0" id="modalFormaPagamentoReservaLabel">Forma de pagamento da reserva</h5>
+                            <div class="small text-muted" id="forma-reserva-subtitulo">Informe como o valor da reserva foi recebido.</div>
+                        </div>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-light border mb-3">
+                            <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap">
+                                <span class="fw-bold">Valor total da reserva:</span>
+                                <span class="fs-5 fw-bold text-success" id="forma-reserva-total">R$ 0,00</span>
+                            </div>
+                            <div class="small text-muted mt-1" id="forma-reserva-detalhes">Reservas pagas nesta comanda.</div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label for="forma-reserva-dinheiro" class="form-label">Dinheiro</label>
+                                <input type="number" step="0.01" min="0" class="form-control forma-reserva-valor" id="forma-reserva-dinheiro" placeholder="0,00">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="forma-reserva-pix" class="form-label">Pix</label>
+                                <input type="number" step="0.01" min="0" class="form-control forma-reserva-valor" id="forma-reserva-pix" placeholder="0,00">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="forma-reserva-cartao" class="form-label">Cartão</label>
+                                <input type="number" step="0.01" min="0" class="form-control forma-reserva-valor" id="forma-reserva-cartao" placeholder="0,00">
+                            </div>
+                            <div class="col-md-8">
+                                <label for="forma-reserva-funcionario" class="form-label">Funcionário que recebeu</label>
+                                <input type="text" class="form-control" id="forma-reserva-funcionario" placeholder="Ex.: Leonardo">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Total informado</label>
+                                <p class="form-control-plaintext fw-bold mb-0" id="forma-reserva-total-informado">R$ 0,00</p>
+                                <small class="text-muted" id="forma-reserva-diferenca">Diferença: R$ 0,00</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-success" id="btn-salvar-forma-pagamento-reserva">Salvar forma de pagamento</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="modal fade" id="modalReservasFuturas" tabindex="-1" aria-labelledby="modalReservasFuturasLabel" aria-hidden="true">
             <div class="modal-dialog modal-xl modal-dialog-scrollable">
                 <div class="modal-content">
