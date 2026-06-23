@@ -678,3 +678,39 @@ main.container-fluid, main.container{
 #modalFormaPagamentoReserva #forma-reserva-detalhes{
   line-height:1.35;
 }
+
+/* ===== Mensalistas ===== */
+.badge-nao-pagou { background:#dc3545; }
+.badge-mensalistas { background:#20c997; }
+.mensalistas-bulk-bar{
+  background:#f4fbf9;
+  border:1px solid rgba(32,201,151,.25);
+  border-radius:12px;
+  padding:8px 10px;
+}
+.comanda-card.is-mensalista{
+  border-left:6px solid #20c997 !important;
+}
+.badge-mensalista-card{
+  background:#20c997;
+  color:#fff;
+  font-size:.68rem;
+  border-radius:999px;
+  padding:.2rem .45rem;
+  font-weight:700;
+}
+
+
+/* ===== Ajustes ordem/compactação comandas ===== */
+.comanda-section-title{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin:18px 0 8px;
+  font-weight:800;
+  color:#0b2c22;
+  font-size:1.02rem;
+}
+.item-reserva-compacto span{
+  font-weight:500;
+}
