@@ -58,6 +58,7 @@
 
         // Elementos do Modal de Adicionar Reservas dentro da comanda
         const btnAbrirModalReservasComanda = document.getElementById('btn-abrir-modal-reservas-comanda');
+        const btnAbrirModalReservasMensalistasComanda = document.getElementById('btn-abrir-modal-reservas-mensalistas-comanda');
         const modalAdicionarReservasComandaEl = document.getElementById('modalAdicionarReservasComanda');
         const modalAdicionarReservasComanda = modalAdicionarReservasComandaEl ? new bootstrap.Modal(modalAdicionarReservasComandaEl) : null;
         const modalAdicionarReservasComandaLabel = document.getElementById('modalAdicionarReservasComandaLabel');
@@ -66,10 +67,13 @@
         const reservasComandaTbodyEl = document.getElementById('reservas-comanda-tbody');
         const reservasComandaSelecionarTodasEl = document.getElementById('reservas-comanda-selecionar-todas');
         const btnAtualizarReservasComanda = document.getElementById('btn-atualizar-reservas-comanda');
+        const reservaComandaValorTodosEl = document.getElementById('reserva-comanda-valor-todos');
+        const btnAplicarValorTodasReservasEl = document.getElementById('btn-aplicar-valor-todas-reservas');
         const btnConfirmarAdicionarReservasComanda = document.getElementById('btn-confirmar-adicionar-reservas-comanda');
         let reservasDisponiveisParaComanda = [];
         let modoReservasComanda = 'hoje';
         let clienteReservasComandaId = null;
+        const __MENSALISTA_GROUP_ID = 'grp_mensalistas';
         
         // Elementos do Modal de Pagamento
         const pagamentoModal = new bootstrap.Modal(document.getElementById('pagamentoModal'));
@@ -630,6 +634,10 @@ clienteCadastradoInput.value = '';
                     quantidade: 1,
                     produtoId: 'reserva-quadra',
                     reservaId: reserva.id,
+                    data_reserva: reserva.data_reserva || '',
+                    hora_inicio: reserva.hora_inicio || '',
+                    hora_fim: reserva.hora_fim || '',
+                    id_quadra: reserva.id_quadra || '',
                 }));
 
                 // Define uma reserva base para agrupamento (time) e cor do botão.
@@ -697,6 +705,174 @@ function __normTextoSemAcento(txt){
     .replace(/[\u0300-\u036f]/g, '')
     .trim()
     .toLowerCase();
+}
+
+
+function __isComandaMensalista(comanda){
+  if (!comanda) return false;
+  const id = String(comanda.reserva_time_id || '').trim();
+  const tipo = String(comanda.tipo_comanda || comanda.reserva_time_tipo || '').toLowerCase().trim();
+  const label = __normTextoSemAcento(comanda.reserva_time_label || comanda.comanda_grupo || '');
+  return comanda.comanda_mensalista === true || id === __MENSALISTA_GROUP_ID || tipo === 'mensalista' || label === 'mensalistas' || label === 'mensalista';
+}
+
+function __isComandaFuncionario(comanda){
+  if (!comanda) return false;
+  const id = String(comanda.reserva_time_id || '').trim();
+  const tipo = String(comanda.tipo_comanda || comanda.reserva_time_tipo || '').toLowerCase().trim();
+  const label = __normTextoSemAcento(comanda.reserva_time_label || comanda.comanda_grupo || '');
+  return id === 'grp_funcionarios' || tipo === 'funcionario' || tipo === 'funcionarios' || label === 'funcionarios' || label === 'funcionario';
+}
+
+function __isComandaNaoPagouResumo(comanda){
+  if (!comanda) return false;
+  const id = String(comanda.reserva_time_id || '').trim();
+  const label = __normTextoSemAcento(comanda.reserva_time_label || comanda.comanda_grupo || '');
+  return id === 'grp_nao_pagou' || label === 'nao pagou' || label === 'nao_pago';
+}
+
+function __isItemReservaComanda(item){
+  const nome = String(item?.nome || '').toLowerCase();
+  const produtoId = String(item?.produtoId || '').toLowerCase();
+  return produtoId === 'reserva-quadra' || nome.startsWith('reserva de quadra') || nome.includes('reserva de quadra');
+}
+
+function __dataReservaItemParaDisplay(item){
+  const raw = item?.data_reserva || item?.dataReserva || item?.data || '';
+  const fromRaw = __formatarSomenteDataReserva(raw);
+  if (fromRaw) return fromRaw;
+
+  const nome = String(item?.nome || '');
+  const paren = nome.match(/\(([^)]+)\)/);
+  const trecho = paren ? paren[1] : nome;
+  const br = trecho.match(/(\d{2}\/\d{2}\/\d{4})/);
+  if (br) return br[1];
+  const iso = trecho.match(/(\d{4}-\d{2}-\d{2})/);
+  if (iso) return __formatarSomenteDataReserva(iso[1]);
+  return '';
+}
+
+function __formatarSomenteDataReserva(v){
+  if (!v) return '';
+  try{
+    if (typeof v?.toDate === 'function') v = v.toDate();
+    if (v instanceof Date && !Number.isNaN(v.getTime())) {
+      const dd = String(v.getDate()).padStart(2,'0');
+      const mm = String(v.getMonth()+1).padStart(2,'0');
+      const yy = v.getFullYear();
+      return `${dd}/${mm}/${yy}`;
+    }
+    const s = String(v || '').trim();
+    const br = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (br) return s;
+    const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (iso) return `${iso[3]}/${iso[2]}/${iso[1]}`;
+    return '';
+  }catch(_){ return ''; }
+}
+
+function __renderItensComandaCompactos(comanda){
+  const itens = Array.isArray(comanda?.itens) ? comanda.itens : [];
+  if (!itens.length) return `<small class="text-muted">Nenhum item</small>`;
+
+  const reservasPorData = new Map();
+  const outrosHtml = [];
+
+  itens.forEach((item, index) => {
+    if (__isItemReservaComanda(item)) {
+      const data = __dataReservaItemParaDisplay(item) || 'Sem data';
+      if (!reservasPorData.has(data)) reservasPorData.set(data, { data, indices: [], quantidade: 0 });
+      const grupo = reservasPorData.get(data);
+      grupo.indices.push(index);
+      grupo.quantidade += Number(item?.quantidade || 1) || 1;
+      return;
+    }
+
+    const qtd = Number(item?.quantidade || 1) || 1;
+    outrosHtml.push(`
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <span>${qtd} - ${escapeHtml(item?.nome || '')}</span>
+        <button class="btn btn-sm btn-danger p-0 px-1" onclick="removerItemComanda('${escapeHtml(comanda.id)}', ${index})" title="Remover item">
+          <i class="bi bi-trash"></i>
+        </button>
+      </div>
+    `);
+  });
+
+  const reservasHtml = Array.from(reservasPorData.values()).sort((a,b)=>{
+    const toKey = (d) => {
+      const m = String(d).match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      return m ? `${m[3]}-${m[2]}-${m[1]}` : String(d);
+    };
+    return toKey(a.data).localeCompare(toKey(b.data));
+  }).map(grupo => {
+    const indices = grupo.indices.join(',');
+    return `
+      <div class="d-flex justify-content-between align-items-center mb-1 item-reserva-compacto">
+        <span>${grupo.quantidade} - ${escapeHtml(grupo.data)}</span>
+        <button class="btn btn-sm btn-danger p-0 px-1" onclick="removerItensComandaPorIndices('${escapeHtml(comanda.id)}', '${indices}')" title="Remover reserva(s) desta data">
+          <i class="bi bi-trash"></i>
+        </button>
+      </div>
+    `;
+  }).join('');
+
+  return reservasHtml + outrosHtml.join('');
+}
+
+function __tituloGrupoComanda(timeId, label){
+  const id = String(timeId || '').trim();
+  if (id === 'grp_nao_pagou') return 'Comandas não pagou';
+  if (id === 'grp_mensalistas') return 'Comandas mensalistas';
+  if (id === 'grp_funcionarios') return 'Funcionários';
+  return label || '';
+}
+
+function __ordenarGruposFixosComandas(a,b){
+  const ordem = {
+    'grp_nao_pagou': 1,
+    'grp_mensalistas': 2,
+    'grp_funcionarios': 3,
+    'grp_evento': 4
+  };
+  const ia = ordem[a.timeId] || 999;
+  const ib = ordem[b.timeId] || 999;
+  return (ia - ib) || String(a.label||'').localeCompare(String(b.label||''));
+}
+
+function __isReservaMensalista(reserva){
+  if (!reserva) return false;
+  const p = String(reserva.pagamento_reserva || reserva.tipo_pagamento_reserva || reserva.status_pagamento || '').toLowerCase().trim();
+  return reserva.mensalista === true || reserva.comanda_mensalista === true || p === 'mensalista' || p.includes('mensalista');
+}
+
+function __mesAtualIntervalo(){
+  const agora = new Date();
+  const y = agora.getFullYear();
+  const m = agora.getMonth();
+  const ini = new Date(y, m, 1);
+  const fim = new Date(y, m + 1, 0);
+  const fmt = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  return { inicio: fmt(ini), fim: fmt(fim), chave: `${y}-${String(m+1).padStart(2,'0')}` };
+}
+
+function __reservaPodeEntrarComoMensalista(r){
+  if (!r || __isCanceladaReserva(r)) return false;
+  const p = __normStatusPagamento(r);
+  if (p === 'pago' || p === 'paga' || p === 'paid' || p === 'quitado' || p === 'quitada') return false;
+  return true;
+}
+
+function __aplicarValorTodasReservasComanda(){
+  const raw = String(reservaComandaValorTodosEl?.value || '').replace(',', '.').trim();
+  const valor = Number(raw);
+  if (!Number.isFinite(valor) || valor < 0) {
+    alert('Informe um valor válido para aplicar nas reservas.');
+    return;
+  }
+  document.querySelectorAll('#reservas-comanda-tbody .reserva-comanda-valor').forEach(input => {
+    input.value = valor.toFixed(2);
+  });
 }
 
 function __isComandaNaoPagou(comanda){
@@ -860,17 +1036,10 @@ const reservaGrupos = Array.from(porReserva.entries()).map(([timeId, g]) => {
   return { timeId, label: g.label, items: g.items, tmin: ord.tmin, qord: ord.qord };
 }).sort((a,b) => (a.tmin - b.tmin) || (a.qord - b.qord) || String(a.label||'').localeCompare(String(b.label||'')));
 
-const grupoOrder = __VINCULO_GRUPOS.map(x => x.id);
 const grupoGrupos = Array.from(porGrupo.entries()).map(([timeId, g]) => {
   __sortItensDoVinculo(g.items);
   return { timeId, label: g.label, items: g.items };
-}).sort((a,b) => {
-  const ia = grupoOrder.indexOf(a.timeId);
-  const ib = grupoOrder.indexOf(b.timeId);
-  const aIdx = ia === -1 ? 999 : ia;
-  const bIdx = ib === -1 ? 999 : ib;
-  return (aIdx - bIdx) || String(a.label||'').localeCompare(String(b.label||''));
-});
+}).sort(__ordenarGruposFixosComandas);
     // Render helper
     function renderComandaCard(comanda, teamId){
       const totalComanda = comanda.itens
@@ -879,21 +1048,13 @@ const grupoGrupos = Array.from(porGrupo.entries()).map(([timeId, g]) => {
 
       const card = document.createElement('div');
       card.className = 'card comanda-card shadow-sm';
+      if (__isComandaMensalista(comanda)) card.classList.add('is-mensalista');
       if (teamId){
         const { border } = __teamColor(teamId);
         card.style.borderLeft = `6px solid ${border}`;
       }
 
-      const itensHtml = (comanda.itens && comanda.itens.length > 0)
-        ? comanda.itens.map((item, index) => `
-            <div class="d-flex justify-content-between align-items-center mb-1">
-              <span>${item.quantidade} - ${item.nome}</span>
-              <button class="btn btn-sm btn-danger p-0 px-1" onclick="removerItemComanda('${comanda.id}', ${index})" title="Remover item">
-                <i class="bi bi-trash"></i>
-              </button>
-            </div>
-          `).join('')
-        : `<small class="text-muted">Nenhum item</small>`;
+      const itensHtml = __renderItensComandaCompactos(comanda);
 
       // botão de vínculo
       const hasLink = !!(comanda.reserva_time_id);
@@ -908,7 +1069,7 @@ card.innerHTML = `
           <div class="d-flex align-items-start justify-content-between gap-2">
             <div class="d-flex align-items-center flex-wrap gap-1">
               <h5 class="card-title mt-0 mb-0">${escapeHtml(comanda.cliente || '')}</h5>
-              
+              ${__isComandaMensalista(comanda) ? '<span class="badge-mensalista-card">Mensalista</span>' : ''}
             </div>
             <div class="d-flex align-items-center gap-1">
               
@@ -949,7 +1110,7 @@ card.innerHTML = `
       box.className = 'comanda-group';
       box.innerHTML = `
         <div class="comanda-group-header">
-          <div class="comanda-group-title"><span class="comanda-dot" style="--team-color:#6c757d"></span> Sem vínculo</div>
+          <div class="comanda-group-title"><span class="comanda-dot" style="--team-color:#6c757d"></span> Comandas abertas</div>
           <div class="comanda-count">${semVinculo.length}</div>
         </div>
         <div class="comandas-grid" id="grid-sem-vinculo"></div>
@@ -961,6 +1122,12 @@ card.innerHTML = `
 
 
 // ===== Vinculadas a reservas (ordem: horário -> quadra) =====
+if (reservaGrupos.length){
+  const tituloReservas = document.createElement('div');
+  tituloReservas.className = 'comanda-section-title';
+  tituloReservas.innerHTML = '<span class="comanda-dot" style="--team-color:#198754"></span> Comandas vinculadas às reservas';
+  listaComandasEl.appendChild(tituloReservas);
+}
 reservaGrupos.forEach(g => {
   const { btn } = __teamColor(g.timeId);
   const box = document.createElement('div');
@@ -991,7 +1158,7 @@ grupoGrupos.forEach(g => {
     <div class="comanda-group-header">
       <div class="comanda-group-title">
         <span class="comanda-dot"></span>
-        <span>${escapeHtml(g.label || '')}</span>
+        <span>${escapeHtml(__tituloGrupoComanda(g.timeId, g.label))}</span>
       </div>
       <div class="comanda-count">${g.items.length}</div>
     </div>
@@ -1040,6 +1207,64 @@ grupoGrupos.forEach(g => {
         }
 
 
+
+
+        /**
+         * Remove todas as reservas agrupadas por data no card compacto.
+         */
+        async function removerItensComandaPorIndices(comandaId, indicesStr) {
+            const indices = String(indicesStr || '')
+              .split(',')
+              .map(v => Number(v))
+              .filter(v => Number.isInteger(v) && v >= 0)
+              .sort((a,b) => b - a);
+
+            if (!indices.length) return;
+            const msg = indices.length > 1
+              ? 'Tem certeza que deseja remover estas reservas da comanda?'
+              : 'Tem certeza que deseja remover esta reserva da comanda?';
+            if (!confirm(msg)) return;
+
+            try {
+                const comandaRef = db.collection('comandas').doc(comandaId);
+                const comandaDoc = await comandaRef.get();
+                if (!comandaDoc.exists) return;
+
+                const comandaData = comandaDoc.data() || {};
+                const novosItens = Array.isArray(comandaData.itens) ? [...comandaData.itens] : [];
+                const reservasRemovidas = [];
+                indices.forEach(i => {
+                    if (novosItens[i]) {
+                        if (novosItens[i].reservaId) reservasRemovidas.push(String(novosItens[i].reservaId));
+                        novosItens.splice(i, 1);
+                    }
+                });
+
+                await comandaRef.update({ itens: novosItens });
+
+                if (reservasRemovidas.length) {
+                    const batch = db.batch();
+                    reservasRemovidas.forEach(id => {
+                        batch.update(db.collection('reservas').doc(id), {
+                            comanda_vinculada_id: firebase.firestore.FieldValue.delete(),
+                            comanda_mensalista_id: firebase.firestore.FieldValue.delete(),
+                            pagamento_reserva: 'aguardando',
+                            mensalista: false,
+                            comanda_mensalista: false,
+                            tipo_pagamento_reserva: firebase.firestore.FieldValue.delete(),
+                            mensalista_mes: firebase.firestore.FieldValue.delete()
+                        });
+                    });
+                    await batch.commit();
+                }
+
+                carregarComandasAbertas();
+                carregarReservasDoDia();
+            } catch (error) {
+                console.error('Erro ao remover reservas agrupadas da comanda:', error);
+                alert('Erro ao remover reservas. Tente novamente.');
+            }
+        }
 
         /**
          * Carrega as reservas do dia atual, agrupa-as por cliente e as exibe em uma tabela.
@@ -2230,6 +2455,50 @@ async function atualizarValorReserva(reservaId, novoValor){
             }
         }
 
+        async function __buscarReservasMesAtualCliente(clienteId) {
+            const cid = String(clienteId || '').trim();
+            if (!cid) return [];
+            const { inicio, fim } = __mesAtualIntervalo();
+            try {
+                const snap = await db.collection('reservas')
+                    .where('id_cliente', '==', cid)
+                    .get();
+                const lista = [];
+                snap.forEach(doc => {
+                    const r = doc.data() || {};
+                    r.id = doc.id;
+                    const data = String(r.data_reserva || '');
+                    if (data >= inicio && data <= fim && __reservaPodeEntrarComoMensalista(r)) lista.push(r);
+                });
+                lista.sort(__sortReservasCliente);
+                return lista;
+            } catch (erro) {
+                console.error('[mensalistas] Falha ao buscar reservas do mês do cliente:', erro);
+                return [];
+            }
+        }
+
+        async function __buscarReservasMesAtualTodas() {
+            const { inicio, fim } = __mesAtualIntervalo();
+            try {
+                const snap = await db.collection('reservas')
+                    .where('data_reserva', '>=', inicio)
+                    .where('data_reserva', '<=', fim)
+                    .get();
+                const lista = [];
+                snap.forEach(doc => {
+                    const r = doc.data() || {};
+                    r.id = doc.id;
+                    if (__reservaPodeEntrarComoMensalista(r)) lista.push(r);
+                });
+                lista.sort(__sortReservasCliente);
+                return lista;
+            } catch (erro) {
+                console.error('[mensalistas] Falha ao buscar reservas do mês:', erro);
+                return [];
+            }
+        }
+
         function __filtrarReservasParaComandaAtual(lista, comandaData) {
             const currentId = String(comandaAtualId || '');
             return (lista || [])
@@ -2283,8 +2552,8 @@ async function atualizarValorReserva(reservaId, novoValor){
             }
 
             reservasComandaTbodyEl.innerHTML = lista.map(r => {
-                const status = __normStatusPagamento(r) || 'aguardando';
-                const badge = (status === 'atrasada' || status === 'atrasado') ? 'bg-danger' : 'bg-warning text-dark';
+                const status = (modoReservasComanda === 'mensalista' && __isReservaMensalista(r)) ? 'mensalista' : (__normStatusPagamento(r) || 'aguardando');
+                const badge = status === 'mensalista' ? 'bg-info text-dark' : ((status === 'atrasada' || status === 'atrasado') ? 'bg-danger' : 'bg-warning text-dark');
                 const valor = Number(r.valor || 0);
                 return `
 <tr class="small">
@@ -2303,7 +2572,8 @@ async function atualizarValorReserva(reservaId, novoValor){
             if (reservasComandaSelecionarTodasEl) reservasComandaSelecionarTodasEl.checked = false;
         }
 
-        async function abrirModalAdicionarReservasComanda() {
+        async function abrirModalAdicionarReservasComanda(opcoes = {}) {
+            const abrirComoMensalista = !!(opcoes && opcoes.mensalista);
             if (!comandaAtualId) {
                 alert('Abra o modal por uma comanda antes de adicionar reservas.');
                 return;
@@ -2312,13 +2582,15 @@ async function atualizarValorReserva(reservaId, novoValor){
             if (!modalAdicionarReservasComanda) return;
 
             reservasDisponiveisParaComanda = [];
-            modoReservasComanda = 'hoje';
+            modoReservasComanda = abrirComoMensalista ? 'mensalista' : 'hoje';
             clienteReservasComandaId = null;
             if (reservasComandaBuscaEl) reservasComandaBuscaEl.value = '';
+            if (reservaComandaValorTodosEl) reservaComandaValorTodosEl.value = '';
             if (reservasComandaSelecionarTodasEl) reservasComandaSelecionarTodasEl.checked = false;
             if (reservasComandaTbodyEl) reservasComandaTbodyEl.innerHTML = `<tr><td colspan="7" class="text-center text-muted small">Carregando reservas...</td></tr>`;
             if (reservasComandaInfoEl) reservasComandaInfoEl.textContent = 'Verificando nome da comanda e buscando reservas...';
-            if (modalAdicionarReservasComandaLabel) modalAdicionarReservasComandaLabel.textContent = 'Adicionar Reservas à Comanda';
+            if (modalAdicionarReservasComandaLabel) modalAdicionarReservasComandaLabel.textContent = abrirComoMensalista ? 'Adicionar Mensalistas do mês' : 'Adicionar Reservas à Comanda';
+            if (btnConfirmarAdicionarReservasComanda) btnConfirmarAdicionarReservasComanda.textContent = abrirComoMensalista ? 'Adicionar mensalistas selecionadas' : 'Adicionar reservas selecionadas';
 
             try {
                 const comandaDoc = await db.collection('comandas').doc(comandaAtualId).get();
@@ -2338,7 +2610,28 @@ async function atualizarValorReserva(reservaId, novoValor){
                 }
 
                 let lista = [];
-                if (clienteEncontrado && clienteEncontrado.id) {
+                if (abrirComoMensalista) {
+                    const { inicio, fim } = __mesAtualIntervalo();
+                    modoReservasComanda = 'mensalista';
+                    if (clienteEncontrado && clienteEncontrado.id) {
+                        clienteReservasComandaId = clienteEncontrado.id;
+                        lista = await __buscarReservasMesAtualCliente(clienteEncontrado.id);
+                        if (reservasComandaInfoEl) {
+                            reservasComandaInfoEl.textContent = `Mensalista: ${clienteEncontrado.nome}. Listando reservas do mês atual (${inicio} até ${fim}).`;
+                        }
+                        if (modalAdicionarReservasComandaLabel) {
+                            modalAdicionarReservasComandaLabel.textContent = `Mensalistas - ${clienteEncontrado.nome}`;
+                        }
+                    } else {
+                        lista = await __buscarReservasMesAtualTodas();
+                        if (reservasComandaInfoEl) {
+                            reservasComandaInfoEl.textContent = `Mensalistas: nome da comanda não encontrado em Clientes. Listando reservas do mês atual (${inicio} até ${fim}).`;
+                        }
+                        if (modalAdicionarReservasComandaLabel) {
+                            modalAdicionarReservasComandaLabel.textContent = 'Mensalistas - mês atual';
+                        }
+                    }
+                } else if (clienteEncontrado && clienteEncontrado.id) {
                     modoReservasComanda = 'cliente';
                     clienteReservasComandaId = clienteEncontrado.id;
                     lista = await __buscarReservasNaoPagasCliente(clienteEncontrado.id);
@@ -2399,6 +2692,8 @@ async function atualizarValorReserva(reservaId, novoValor){
                     return;
                 }
                 const comandaData = comandaDoc.data() || {};
+                const adicionandoMensalistas = modoReservasComanda === 'mensalista';
+                const { chave: mensalistaMesAtual } = __mesAtualIntervalo();
 
                 const reservasParaAdicionar = [];
                 for (const reservaId of reservaIds) {
@@ -2427,7 +2722,11 @@ async function atualizarValorReserva(reservaId, novoValor){
                     preco_venda: valores[reserva.id] != null ? Number(valores[reserva.id]) : Number(reserva.valor || 0),
                     quantidade: 1,
                     produtoId: 'reserva-quadra',
-                    reservaId: reserva.id
+                    reservaId: reserva.id,
+                    data_reserva: reserva.data_reserva || '',
+                    hora_inicio: reserva.hora_inicio || '',
+                    hora_fim: reserva.hora_fim || '',
+                    id_quadra: reserva.id_quadra || ''
                 }));
 
                 const idsAtuais = Array.isArray(comandaData.reservas_vinculadas_ids) ? comandaData.reservas_vinculadas_ids.map(String) : [];
@@ -2439,7 +2738,16 @@ async function atualizarValorReserva(reservaId, novoValor){
                 };
 
                 const reservaBase = reservasParaAdicionar[0];
-                if (!comandaData.reserva_time_id && reservaBase) {
+                if (adicionandoMensalistas) {
+                    updateComanda.comanda_mensalista = true;
+                    updateComanda.tipo_comanda = 'mensalista';
+                    updateComanda.mensalista_mes = mensalistaMesAtual;
+                    updateComanda.reserva_time_id = __MENSALISTA_GROUP_ID;
+                    updateComanda.reserva_time_label = 'Mensalistas';
+                    updateComanda.reserva_time_tipo = 'grupo';
+                    updateComanda.reserva_time_vinculado_em = firebase.firestore.Timestamp.now();
+                    updateComanda.reserva_time_principal = false;
+                } else if (!comandaData.reserva_time_id && reservaBase) {
                     const nomeClienteReserva = getClienteNome(reservaBase.id_cliente);
                     updateComanda.reserva_time_id = reservaBase.id;
                     updateComanda.reserva_time_label = `${nomeClienteReserva} • ${getQuadraNome(reservaBase.id_quadra)} • ${reservaBase.hora_inicio || ''}`;
@@ -2454,11 +2762,20 @@ async function atualizarValorReserva(reservaId, novoValor){
                 batch.update(comandaRef, updateComanda);
                 reservasParaAdicionar.forEach(reserva => {
                     const valorAtualizado = valores[reserva.id] != null ? Number(valores[reserva.id]) : Number(reserva.valor || 0);
-                    batch.update(db.collection('reservas').doc(reserva.id), {
+                    const reservaUpdate = {
                         comanda_vinculada_id: comandaAtualId,
                         status_reserva: 'ativa',
                         valor: valorAtualizado
-                    });
+                    };
+                    if (adicionandoMensalistas) {
+                        reservaUpdate.pagamento_reserva = 'mensalista';
+                        reservaUpdate.mensalista = true;
+                        reservaUpdate.comanda_mensalista = true;
+                        reservaUpdate.comanda_mensalista_id = comandaAtualId;
+                        reservaUpdate.mensalista_mes = mensalistaMesAtual;
+                        reservaUpdate.tipo_pagamento_reserva = 'mensalista';
+                    }
+                    batch.update(db.collection('reservas').doc(reserva.id), reservaUpdate);
                 });
                 await batch.commit();
 
@@ -2505,7 +2822,12 @@ async function atualizarValorReserva(reservaId, novoValor){
                         batch.update(reservaRef, {
                             comanda_vinculada_id: null,
                             status_reserva: 'aguardando',
-                            pagamento_reserva: 'aguardando'
+                            pagamento_reserva: 'aguardando',
+                            mensalista: firebase.firestore.FieldValue.delete(),
+                            comanda_mensalista: firebase.firestore.FieldValue.delete(),
+                            comanda_mensalista_id: firebase.firestore.FieldValue.delete(),
+                            mensalista_mes: firebase.firestore.FieldValue.delete(),
+                            tipo_pagamento_reserva: firebase.firestore.FieldValue.delete()
                         });
                     }
                 }
@@ -3279,10 +3601,16 @@ async function atualizarValorReserva(reservaId, novoValor){
         });
 
         if (btnAbrirModalReservasComanda) {
-            btnAbrirModalReservasComanda.addEventListener('click', abrirModalAdicionarReservasComanda);
+            btnAbrirModalReservasComanda.addEventListener('click', () => abrirModalAdicionarReservasComanda({ mensalista: false }));
+        }
+        if (btnAbrirModalReservasMensalistasComanda) {
+            btnAbrirModalReservasMensalistasComanda.addEventListener('click', () => abrirModalAdicionarReservasComanda({ mensalista: true }));
         }
         if (btnAtualizarReservasComanda) {
-            btnAtualizarReservasComanda.addEventListener('click', abrirModalAdicionarReservasComanda);
+            btnAtualizarReservasComanda.addEventListener('click', () => abrirModalAdicionarReservasComanda({ mensalista: modoReservasComanda === 'mensalista' }));
+        }
+        if (btnAplicarValorTodasReservasEl) {
+            btnAplicarValorTodasReservasEl.addEventListener('click', __aplicarValorTodasReservasComanda);
         }
         if (reservasComandaBuscaEl) {
             reservasComandaBuscaEl.addEventListener('input', __renderReservasComandaTabela);
@@ -3563,6 +3891,8 @@ function __setupMetrics(){
     reservasAPagar: document.getElementById('mReservasAPagar'),
     reservasPagas: document.getElementById('mReservasPagas'),
     comandasAbertas: document.getElementById('mComandasAbertas'),
+    naoPagou: document.getElementById('mNaoPagou'),
+    mensalistas: document.getElementById('mMensalistas'),
     produtosVendidos: document.getElementById('mProdutosVendidos'),
     totalDia: document.getElementById('mTotalDia'),
   };
@@ -3577,6 +3907,7 @@ function __setupMetrics(){
   let somaReservasPagas = 0;
   let somaProdutosVendidos = 0;
   let somaComandasAbertas = 0;
+  let somaMensalistasAbertas = 0;
 
   function isTodayDate(d){
     if (!d) return false;
@@ -3599,6 +3930,7 @@ function __setupMetrics(){
     let pagar = 0;
     snap.forEach(doc => {
       const r = doc.data()||{};
+      if (__isReservaMensalista(r)) return;
       if (!r.comanda_vinculada_id) return;
       const d = anyToDate(r.dataReserva) || anyToDate(r.data) || anyToDate(r.createdAt);
       if (!isTodayDate(d)) return;
@@ -3610,23 +3942,28 @@ function __setupMetrics(){
     recomputeTotal();
   });
 
-  // 2) Comandas Abertas hoje (somando itens; reserva conta aqui)
+  // 2) Comandas Abertas hoje (mensalistas ficam em campo separado)
   comandasRef.onSnapshot((snap)=>{
     let total = 0;
+    let mensalistas = 0;
     snap.forEach(doc => {
       const c = doc.data()||{};
       const status = (c.status_comanda||'').toLowerCase();
       if (status === 'paga') return;
       const d = anyToDate(c.data_abertura);
       if (d && !isTodayDate(d)) return;
-      (c.itens||[]).forEach(it => {
+      const valorComanda = (c.itens||[]).reduce((s, it) => {
         const qtd = Number(it?.quantidade||1);
         const preco = Number(it?.preco_venda ?? priceByName[it?.nome] ?? 0);
-        total += qtd * preco;
-      });
+        return s + (qtd * preco);
+      }, 0);
+      if (__isComandaMensalista(c)) mensalistas += valorComanda;
+      else total += valorComanda;
     });
     somaComandasAbertas = total;
+    somaMensalistasAbertas = mensalistas;
     els.comandasAbertas.textContent = fmt(total);
+    if (els.mensalistas) els.mensalistas.textContent = fmt(mensalistas);
     recomputeTotal();
   });
 
@@ -3771,9 +4108,10 @@ function __teamColor(id){
 // Vínculos especiais (tratados como "reserva"): grupos fixos
 // =========================================================
 const __VINCULO_GRUPOS = [
-  { id: 'grp_evento',       label: 'Evento',        color: '#6f42c1', icon: 'bi-calendar-event' },
   { id: 'grp_nao_pagou',    label: 'Não pagou',     color: '#dc3545', icon: 'bi-exclamation-triangle' },
-  { id: 'grp_funcionarios', label: 'Funcionários',  color: '#0d6efd', icon: 'bi-person-badge' }
+  { id: 'grp_mensalistas',  label: 'Mensalistas',   color: '#20c997', icon: 'bi-calendar-month' },
+  { id: 'grp_funcionarios', label: 'Funcionários',  color: '#0d6efd', icon: 'bi-person-badge' },
+  { id: 'grp_evento',       label: 'Evento',        color: '#6f42c1', icon: 'bi-calendar-event' }
 ];
 
 function __grupoById(id){
@@ -4197,15 +4535,19 @@ function initResumoDoDia(){
     reservasAPagar: document.getElementById('mReservasAPagar'),
     reservasPagas: document.getElementById('mReservasPagas'),
     comandasAbertas: document.getElementById('mComandasAbertas'),
+    naoPagou: document.getElementById('mNaoPagou'),
+    mensalistas: document.getElementById('mMensalistas'),
     produtosVendidos: document.getElementById('mProdutosVendidos'),
     totalDia: document.getElementById('mTotalDia')
   };
-  const hasAll = Object.values(els).every(Boolean);
+  const hasAll = els.reservasAPagar && els.reservasPagas && els.comandasAbertas && els.produtosVendidos && els.totalDia;
   if (!hasAll) return;
 
   let somaReservasAPagar = 0;      // reservas do dia (data_reserva==hoje) com status "aguardando"
   let somaReservasPagas = 0;       // reservas pagas hoje (pela soma de itens "Reserva..." em comandas pagas hoje)
-  let somaComandasAbertas = 0;     // soma de todas as comandas em aberto
+  let somaComandasAbertas = 0;     // soma de comandas abertas, excluindo não pagou, mensalistas e funcionários
+  let somaNaoPagouAbertas = 0;      // soma de comandas abertas no grupo Não pagou
+  let somaMensalistasAbertas = 0;   // soma de comandas mensalistas abertas
   let somaProdutosVendidos = 0;    // produtos pagos hoje (comandas pagas hoje + venda direta hoje), sem itens "Reserva..."
 
   function recompute(){
@@ -4213,6 +4555,8 @@ function initResumoDoDia(){
     els.reservasAPagar.textContent   = fmtBR(somaReservasAPagar);
     els.reservasPagas.textContent    = fmtBR(somaReservasPagas);
     els.comandasAbertas.textContent  = fmtBR(somaComandasAbertas);
+    if (els.naoPagou) els.naoPagou.textContent = fmtBR(somaNaoPagouAbertas);
+    if (els.mensalistas) els.mensalistas.textContent = fmtBR(somaMensalistasAbertas);
     els.produtosVendidos.textContent = fmtBR(somaProdutosVendidos);
     els.totalDia.textContent         = fmtBR(total);
   }
@@ -4262,6 +4606,7 @@ function initResumoDoDia(){
     snap.forEach(doc=>{
       const r = doc.data()||{};
       if (__isReservaCancelada(r)) return;
+      if (__isReservaMensalista(r)) return;
       const st = __normStatusLocal(r);
       if (st !== 'aguardando') return;
       const val = Number(r.valor || r.valor_total || r.valor_reserva || 0);
@@ -4299,18 +4644,26 @@ function initResumoDoDia(){
     recompute();
   });
 
-  // ===== 3) Comandas abertas (todas em aberto) =====
+  // ===== 3) Comandas abertas (mensalistas ficam em campo separado) =====
   db.collection('comandas').where('status_comanda','==','Aberta').onSnapshot((snap)=>{
     let total = 0;
+    let naoPagou = 0;
+    let mensalistas = 0;
     snap.forEach(doc=>{
       const c = doc.data()||{};
-      (c.itens||[]).forEach(it=>{
+      const valorComanda = (c.itens||[]).reduce((soma, it)=>{
         const qtd = Number(it?.quantidade||1);
         const preco = Number(it?.preco_venda||0);
-        total += qtd * preco;
-      });
+        return soma + (qtd * preco);
+      }, 0);
+      if (__isComandaFuncionario(c)) return;
+      if (__isComandaNaoPagouResumo(c)) naoPagou += valorComanda;
+      else if (__isComandaMensalista(c)) mensalistas += valorComanda;
+      else total += valorComanda;
     });
     somaComandasAbertas = total;
+    somaNaoPagouAbertas = naoPagou;
+    somaMensalistasAbertas = mensalistas;
     recompute();
   });
 
