@@ -111,6 +111,8 @@
             <div class="metric"><span class="label"><span class="badge-dot badge-reservas-apagar"></span>Reservas a pagar</span><span id="mReservasAPagar" class="value">R$ 0,00</span></div>
             <div class="metric"><span class="label"><span class="badge-dot badge-reservas-pagas"></span>Reservas pagas</span><span id="mReservasPagas" class="value">R$ 0,00</span></div>
             <div class="metric"><span class="label"><span class="badge-dot badge-comandas-abertas"></span>Comandas abertas</span><span id="mComandasAbertas" class="value">R$ 0,00</span></div>
+            <div class="metric"><span class="label"><span class="badge-dot badge-nao-pagou"></span>Não pagou</span><span id="mNaoPagou" class="value">R$ 0,00</span></div>
+            <div class="metric"><span class="label"><span class="badge-dot badge-mensalistas"></span>Mensalistas</span><span id="mMensalistas" class="value">R$ 0,00</span></div>
             <div class="metric"><span class="label"><span class="badge-dot badge-produtos-vendidos"></span>Produtos vendidos</span><span id="mProdutosVendidos" class="value">R$ 0,00</span></div>
             <hr class="my-2" />
             <div class="metric"><span class="label"><span class="badge-dot badge-total-dia"></span>Total do dia</span><span id="mTotalDia" class="value">R$ 0,00</span></div>
@@ -193,13 +195,17 @@
 
                         <hr class="my-3">
 
-                        <div class="d-grid">
+                        <div class="d-grid gap-2">
                             <button type="button" class="btn btn-outline-success" id="btn-abrir-modal-reservas-comanda">
                                 <i class="bi bi-calendar-plus"></i> Adicionar Reservas
                             </button>
+                            <button type="button" class="btn btn-outline-primary" id="btn-abrir-modal-reservas-mensalistas-comanda">
+                                <i class="bi bi-calendar-month"></i> Adicionar Mensalistas do mês
+                            </button>
                         </div>
                         <div class="form-text mt-2">
-                            Se a comanda estiver com o nome de um cliente cadastrado, serão listadas todas as reservas não pagas dele. Caso contrário, serão listadas as reservas não pagas de hoje.
+                            <b>Adicionar Reservas:</b> lista as reservas não pagas do cliente ou, sem cliente cadastrado, as reservas não pagas de hoje.<br>
+                            <b>Mensalistas:</b> lista as reservas do mês atual para selecionar e aplicar um valor com desconto em todas de uma vez.
                         </div>
                     </div>
                 </div>
@@ -217,13 +223,20 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+                        <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
                             <input type="text" class="form-control form-control-sm" id="reservas-comanda-busca" style="max-width: 360px;" placeholder="Buscar por cliente, data, quadra ou horário...">
                             <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-atualizar-reservas-comanda">Atualizar</button>
                             <div class="form-check ms-auto">
                                 <input class="form-check-input" type="checkbox" id="reservas-comanda-selecionar-todas">
                                 <label class="form-check-label small" for="reservas-comanda-selecionar-todas">Selecionar todas</label>
                             </div>
+                        </div>
+
+                        <div class="mensalistas-bulk-bar d-flex flex-wrap gap-2 align-items-center mb-3">
+                            <span class="small fw-bold text-muted">Valor para todas:</span>
+                            <input type="number" step="0.01" min="0" class="form-control form-control-sm text-end" id="reserva-comanda-valor-todos" style="max-width: 140px;" placeholder="Ex.: 70,00">
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="btn-aplicar-valor-todas-reservas">Aplicar em todas</button>
+                            <span class="small text-muted">Use para mensalistas com desconto no valor do jogo.</span>
                         </div>
 
                         <div class="table-responsive">
